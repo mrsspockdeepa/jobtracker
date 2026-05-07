@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Job Search Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:#1e1b4b;font-size:14px}
+.app{display:flex;min-height:100vh}
+#sidebar{width:224px;background:linear-gradient(160deg,#13111C 0%,#1E1040 100%);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.3)}
+.sb-head{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.sb-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#8B5CF6,#EC4899);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sb-title{font-weight:700;font-size:14px;color:#fff;letter-spacing:-.01em}
+.sb-sub{font-size:11px;color:rgba(255,255,255,.3);margin-top:2px}
+.nav-sec{font-size:10px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:16px 16px 4px;letter-spacing:.08em;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;border-radius:8px;margin:1px 8px;transition:all 140ms;font-weight:500}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.nav-item.active{background:linear-gradient(135deg,rgba(139,92,246,.3),rgba(236,72,153,.15));color:#C4B5FD;border:1px solid rgba(139,92,246,.25)}
+.nav-item .ni{width:18px;text-align:center}
+#main{flex:1;margin-left:224px;display:flex;flex-direction:column}
+#topbar{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(139,92,246,.1);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.prog-wrap{display:flex;align-items:center;gap:10px}
+.prog-track{width:130px;height:6px;background:#E9E3FF;border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#8B5CF6,#EC4899);border-radius:10px;transition:width .4s}
+.prog-fill.done{background:linear-gradient(90deg,#10b981,#34d399)}
+.prog-lbl{font-size:12px;color:#6D6FA0;font-weight:500}
+.badge-bal{font-size:11px;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);color:#065f46;padding:3px 10px;border-radius:20px;font-weight:600}
+#content{padding:28px;max-width:900px}
+.btn{padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all 120ms;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;box-shadow:0 2px 12px rgba(139,92,246,.35)}
+.btn-primary:hover{box-shadow:0 4px 20px rgba(139,92,246,.55);transform:translateY(-1px)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-ghost{background:rgba(139,92,246,.08);color:#7C3AED;border:1px solid rgba(139,92,246,.15)}
+.btn-ghost:hover{background:rgba(139,92,246,.14)}
+.btn-danger{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA}
+.btn-danger:hover{background:#FEE2E2}
+.dd-wrap{position:relative}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid rgba(139,92,246,.15);border-radius:12px;box-shadow:0 12px 40px rgba(109,93,160,.15);width:205px;z-index:50;overflow:hidden;display:none}
+.dd-menu.open{display:block}
+.dd-item{display:flex;align-items:center;gap:9px;padding:9px 14px;font-size:13px;cursor:pointer;color:#374151;font-weight:500}
+.dd-item:hover{background:#F5F3FF}
+.card{background:#fff;border:1px solid rgba(139,92,246,.1);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 8px rgba(109,93,160,.06)}
+.card h2{font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid rgba(139,92,246,.1);border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(109,93,160,.06);position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat.s1::before{background:linear-gradient(90deg,#8B5CF6,#EC4899)}
+.stat.s2::before{background:linear-gradient(90deg,#3B82F6,#06B6D4)}
+.stat.s3::before{background:linear-gradient(90deg,#10B981,#34D399)}
+.stat-lbl{font-size:10px;text-transform:uppercase;color:#9CA3AF;letter-spacing:.07em;font-weight:700;margin-bottom:4px}
+.stat-val{font-size:30px;font-weight:700;letter-spacing:-.02em;background:linear-gradient(135deg,#4C1D95,#7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-sub{font-size:12px;color:#9CA3AF;margin-top:2px}
+.bal-tip{font-size:12px;background:linear-gradient(135deg,#ECFDF5,#D1FAE5);color:#065f46;padding:8px 10px;border-radius:8px;margin-top:10px;font-weight:500}
+.act-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(139,92,246,.06);flex-wrap:wrap;gap:4px}
+.act-row:last-child{border-bottom:none}
+.act-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.act-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.act-title{font-size:13px;color:#1e1b4b;font-weight:500}
+.act-meta{font-size:11px;color:#9CA3AF;margin-top:1px}
+.act-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.edit-lnk{font-size:12px;color:#8B5CF6;cursor:pointer;font-weight:600;padding:4px 8px;border-radius:6px}
+.edit-lnk:hover{background:#F5F3FF}
+.empty{text-align:center;padding:32px;color:#9CA3AF;font-size:13px}
+.mod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.mod-tile{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid rgba(139,92,246,.1);border-radius:10px;cursor:pointer;background:#FAFAFE;transition:all 100ms}
+.mod-tile:hover{background:#F5F3FF;border-color:rgba(139,92,246,.25);transform:translateY(-1px)}
+.mod-tile-l{display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;font-weight:500}
+.mod-cnt{font-size:12px;font-weight:700;color:#8B5CF6;background:rgba(139,92,246,.1);padding:2px 8px;border-radius:20px}
+.mod-cnt.z{color:#CBD5E1;background:#F8FAFC}
+.nudge{display:flex;gap:9px;font-size:13px;padding:9px 12px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1px solid #FDE68A;border-radius:9px;margin-bottom:8px;color:#92400E;font-weight:500}
+.mod-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.mod-title{font-size:22px;font-weight:700;display:flex;align-items:center;gap:9px;color:#1e1b4b}
+.search{width:100%;padding:9px 14px;border:1.5px solid rgba(139,92,246,.15);border-radius:10px;font-size:13px;margin-bottom:12px;outline:none;background:#FAFAFE;font-family:inherit}
+.search:focus{border-color:#8B5CF6;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;color:#9CA3AF;border-bottom:1px solid rgba(139,92,246,.08);font-weight:700;letter-spacing:.06em}
+td{padding:10px 12px;border-bottom:1px solid rgba(139,92,246,.05);color:#374151}
+tr:hover td{background:#FAFAFE}
+tr:last-child td{border-bottom:none}
+.pipe-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pipe-col{background:rgba(139,92,246,.05);border-radius:12px;padding:10px;border:1px solid rgba(139,92,246,.08)}
+.pipe-col-title{font-size:10px;text-transform:uppercase;color:#7C3AED;font-weight:700;letter-spacing:.07em;margin-bottom:9px}
+.pipe-card{background:#fff;border-radius:9px;padding:11px;box-shadow:0 1px 6px rgba(109,93,160,.1);cursor:pointer;margin-bottom:7px;border:1px solid rgba(139,92,246,.08);transition:all 120ms}
+.pipe-card:hover{box-shadow:0 4px 16px rgba(109,93,160,.2);transform:translateY(-2px)}
+.pipe-card.stale{border-left:3px solid #F87171}
+.pipe-co{font-size:13px;font-weight:600;color:#1e1b4b}
+.pipe-role{font-size:11px;color:#9CA3AF;margin-top:2px}
+.pipe-days{font-size:10px;color:#CBD5E1;margin-top:7px;font-weight:500}
+.overlay{position:fixed;inset:0;background:rgba(19,17,28,.6);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:600px;margin:auto;box-shadow:0 24px 80px rgba(109,93,160,.25);border:1px solid rgba(139,92,246,.1)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(139,92,246,.08);background:linear-gradient(135deg,#FAFAFE,#F5F3FF);border-radius:18px 18px 0 0}
+.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;color:#1e1b4b}
+.modal-x{background:none;border:none;cursor:pointer;font-size:20px;color:#9CA3AF;line-height:1;padding:2px 6px;border-radius:6px}
+.modal-x:hover{background:#F1F5F9;color:#4B5563}
+.modal-body{padding:20px;max-height:58vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.modal-body .full{grid-column:1/-1}
+.modal-foot{padding:14px 22px;border-top:1px solid rgba(139,92,246,.08);background:#FAFAFE;border-radius:0 0 18px 18px;display:flex;justify-content:space-between;align-items:center}
+.field label{display:block;font-size:11px;font-weight:600;color:#6D6FA0;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:8px 11px;border:1.5px solid rgba(139,92,246,.15);border-radius:8px;font-size:13px;outline:none;font-family:inherit;background:#FAFAFE;color:#1e1b4b}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#8B5CF6;background:#fff}
+.field textarea{resize:vertical;min-height:72px}
+.err{color:#B91C1C;font-size:12px;padding:0 22px 8px;font-weight:500}
+.s-lbl{font-size:11px;font-weight:600;color:#6D6FA0;margin-bottom:4px;display:block}
+.s-inp{padding:8px 12px;border:1.5px solid rgba(139,92,246,.15);border-radius:8px;font-size:13px;outline:none;width:100%;font-family:inherit;background:#FAFAFE;color:#1e1b4b}
+.s-inp:focus{border-color:#8B5CF6;background:#fff}
+.s-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.page-title{font-size:24px;font-weight:700;letter-spacing:-.02em;color:#1e1b4b;margin-bottom:4px}
+.page-sub{font-size:13px;color:#9CA3AF;margin-bottom:22px}
+.ico-phone{background:linear-gradient(135deg,#EDE9FE,#DDD6FE)}
+.ico-pod{background:linear-gradient(135deg,#FCE7F3,#FBCFE8)}
+.ico-book{background:linear-gradient(135deg,#FEF3C7,#FDE68A)}
+.ico-learn{background:linear-gradient(135deg,#D1FAE5,#A7F3D0)}
+.ico-ai{background:linear-gradient(135deg,#CFFAFE,#A5F3FC)}
+.ico-case{background:linear-gradient(135deg,#FEE2E2,#FECACA)}
+.ico-job{background:linear-gradient(135deg,#E0E7FF,#C7D2FE)}
+.ico-res{background:linear-gradient(135deg,#F1F5F9,#E2E8F0)}
+.ico-cov{background:linear-gradient(135deg,#FCE7F3,#FBCFE8)}
+.ico-net{background:linear-gradient(135deg,#CCFBF1,#99F6E4)}
+.ico-ref{background:linear-gradient(135deg,#EDE9FE,#DDD6FE)}
+.maven-card{background:linear-gradient(135deg,#1E1040 0%,#2D1B69 50%,#1E1040 100%);border:1px solid rgba(167,139,250,.25);color:#fff}
+.maven-card h2{color:rgba(196,181,253,.55)}
+.maven-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.maven-badge{background:linear-gradient(135deg,#8B5CF6,#EC4899);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 14px rgba(139,92,246,.5)}
+.maven-program-title{font-size:15px;font-weight:700;color:#fff}
+.maven-program-sub{font-size:12px;color:rgba(196,181,253,.5);margin-top:2px}
+.maven-mods{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.maven-mod{background:rgba(255,255,255,.06);border:1px solid rgba(167,139,250,.15);border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all 100ms}
+.maven-mod:hover{background:rgba(255,255,255,.11)}
+.maven-mod.capstone{grid-column:1/-1;background:linear-gradient(135deg,rgba(236,72,153,.12),rgba(139,92,246,.12));border-color:rgba(236,72,153,.35)}
+.maven-mod-info .t{font-size:12px;color:rgba(255,255,255,.85);font-weight:500;line-height:1.3}
+.maven-mod-info .d{font-size:10px;color:rgba(196,181,253,.45);margin-top:2px}
+.pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.pill-done{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.25)}
+.pill-signed{background:rgba(236,72,153,.2);color:#F9A8D4;border:1px solid rgba(236,72,153,.25)}
+.pill-prog{background:rgba(245,158,11,.2);color:#FCD34D;border:1px solid rgba(245,158,11,.25)}
+.maven-section{background:rgba(255,255,255,.04);border:1px solid rgba(167,139,250,.12);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.maven-section-hd{font-size:10px;font-weight:700;color:rgba(196,181,253,.55);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;justify-content:space-between}
+.maven-tk-item{font-size:12px;color:rgba(255,255,255,.68);padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.5}
+.maven-tk-item:last-child{border-bottom:none}
+.collapse-btn{background:none;border:1px solid rgba(167,139,250,.25);cursor:pointer;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;transition:all 100ms}
+.collapse-btn.light{color:rgba(196,181,253,.6)}.collapse-btn.light:hover{background:rgba(255,255,255,.1);color:rgba(196,181,253,.9)}
+.collapse-btn.dark{color:#8B5CF6;border-color:rgba(139,92,246,.25);background:rgba(139,92,246,.05)}.collapse-btn.dark:hover{background:rgba(139,92,246,.12)}
+.private-notes{background:#FAFAFE;border:1px solid rgba(139,92,246,.1);border-radius:8px;padding:10px 12px;margin-top:6px;font-size:12px;color:#475569;line-height:1.6;white-space:pre-wrap;width:100%}
+.todo-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(139,92,246,.05)}
+.todo-row:last-child{border-bottom:none}
+.todo-check{width:18px;height:18px;border-radius:5px;border:2px solid rgba(139,92,246,.3);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 120ms;color:transparent}
+.todo-check:hover{border-color:#8B5CF6;background:rgba(139,92,246,.1)}
+.todo-check.done{background:#8B5CF6;border-color:#8B5CF6;color:#fff}
+.todo-title{font-size:13px;color:#374151;flex:1;font-weight:500}
+.todo-title.done{text-decoration:line-through;color:#9CA3AF}
+.todo-date{font-size:11px;color:#CBD5E1;flex-shrink:0}
+.todo-add-form{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(139,92,246,.06)}
+.todo-input{flex:1;padding:7px 10px;border:1.5px solid rgba(139,92,246,.15);border-radius:8px;font-size:13px;outline:none;font-family:inherit;background:#FAFAFE}
+.todo-input:focus{border-color:#8B5CF6;background:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">🎯</div>
+        <div><div class="sb-title">Job Search</div><div class="sb-sub">Tracker</div></div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);margin-top:auto">
+      <a href="https://mrsspockdeepa.github.io/" target="_blank" style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(196,181,253,.6);text-decoration:none;padding:6px 8px;border-radius:7px;transition:all 120ms" onmouseover="this.style.background='rgba(255,255,255,.07)';this.style.color='rgba(196,181,253,.9)'" onmouseout="this.style.background='';this.style.color='rgba(196,181,253,.6)'">
+        <span style="font-size:14px">🌐</span> Portfolio
+      </a>
+    </div>
+  </aside>
+  <div id="main">
+    <div id="topbar">
+      <div class="prog-wrap">
+        <div class="prog-track"><div id="prog-fill" class="prog-fill" style="width:0%"></div></div>
+        <span id="prog-lbl" class="prog-lbl">0h / 6h today</span>
+        <span id="bal-badge" class="badge-bal" style="display:none">✨ Balance time</span>
+      </div>
+      <div class="dd-wrap">
+        <button class="btn btn-primary" id="dd-btn">+ New Activity</button>
+        <div class="dd-menu" id="dd-menu"></div>
+      </div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+<div class="overlay" id="overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-x" id="modal-x">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="err" id="modal-err"></div>
+    <div class="modal-foot">
+      <div id="modal-del-wrap"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ── Constants & utils ──────────────────────────────────────────────
+const KEY = 'jst_v1';
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36);
+const todayStr = () => new Date().toISOString().slice(0,10);
+const fmtDate = s => { if(!s) return ''; const d = new Date(s+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const daysSince = ts => Math.floor((Date.now() - new Date(ts)) / 86400000);
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi, v));
+const loadData = () => { try { return JSON.parse(localStorage.getItem(KEY)||'null'); } catch { return null; } };
+const saveData = d => localStorage.setItem(KEY, JSON.stringify(d));
+
+const ICO_MAP = {recruiter_calls:'ico-phone',podcasts:'ico-pod',books:'ico-book',learnings:'ico-learn',ai_modules:'ico-ai',case_studies:'ico-case',jobs_applied:'ico-job',resumes:'ico-res',cover_letters:'ico-cov',networking:'ico-net',reflections:'ico-ref'};
+
+// ── Module schema ──────────────────────────────────────────────────
+const MODS = [
+  {id:'recruiter_calls',label:'Recruiter Calls',icon:'📞',
+   fields:[{n:'contactLabel',l:'Contact',t:'text',req:1},{n:'company',l:'Company',t:'text'},{n:'roleDiscussed',l:'Role Discussed',t:'text'},{n:'dateOccurred',l:'Date',t:'date',def:'today',req:1},{n:'durationMinutes',l:'Duration (min)',t:'number',def:30},{n:'channel',l:'Channel',t:'select',opts:['phone','video','in person']},{n:'recruiterType',l:'Type',t:'select',opts:['in house','agency','executive search']},{n:'summary',l:'Summary',t:'textarea',full:1},{n:'nextSteps',l:'Next Steps',t:'textarea',full:1},{n:'nextStepDate',l:'Next Step Date',t:'date'}],
+   cols:['dateOccurred','contactLabel','company','roleDiscussed'],title:r=>`${r.contactLabel||'Contact'}${r.company?' · '+r.company:''}`},
+  {id:'podcasts',label:'Podcasts',icon:'🎧',
+   fields:[{n:'showName',l:'Show',t:'text',req:1},{n:'episodeTitle',l:'Episode',t:'text'},{n:'guest',l:'Guest',t:'text'},{n:'dateOccurred',l:'Date Listened',t:'date',def:'today',req:1},{n:'durationMinutes',l:'Duration (min)',t:'number'},{n:'status',l:'Status',t:'select',opts:['queued','in progress','completed'],def:'completed'},{n:'keyTakeaways',l:'Key Takeaways',t:'textarea',full:1},{n:'applicableTo',l:'Applicable To',t:'text'}],
+   cols:['dateOccurred','showName','episodeTitle','guest','status'],title:r=>`${r.showName||'Podcast'}${r.episodeTitle?' · '+r.episodeTitle:''}`},
+  {id:'books',label:'Books',icon:'📚',
+   fields:[{n:'title',l:'Title',t:'text',req:1},{n:'author',l:'Author',t:'text'},{n:'subtitle',l:'Subtitle',t:'text'},{n:'format',l:'Format',t:'select',opts:['audio','ebook','print']},{n:'dateOccurred',l:'Finish Date',t:'date'},{n:'status',l:'Status',t:'select',opts:['queued','reading','finished','abandoned'],def:'queued'},{n:'rating',l:'Rating (1-5)',t:'number'},{n:'source',l:'Recommended By',t:'text'},{n:'keyConcepts',l:'Key Concepts',t:'textarea',full:1}],
+   cols:['title','author','status','rating'],title:r=>`${r.title||'Book'}${r.author?' · '+r.author:''}`},
+  {id:'learnings',label:'Learnings',icon:'💡',
+   fields:[{n:'title',l:'Title',t:'text',req:1},{n:'dateOccurred',l:'Date',t:'date',def:'today',req:1},{n:'source',l:'Source',t:'text'},{n:'category',l:'Category',t:'select',opts:['career','AI','PM craft','industry','personal']},{n:'summary',l:'Summary',t:'textarea',full:1},{n:'applicationToJobSearch',l:'Application to Job Search',t:'textarea',full:1}],
+   cols:['dateOccurred','title','category','source'],title:r=>r.title||'Learning'},
+  {id:'ai_modules',label:'AI Modules',icon:'🤖',
+   fields:[{n:'programName',l:'Program',t:'text',req:1},{n:'providerName',l:'Provider',t:'text'},{n:'moduleOrLessonTitle',l:'Module / Lesson',t:'text'},{n:'dateOccurred',l:'Date Completed',t:'date',def:'today',req:1},{n:'durationMinutes',l:'Duration (min)',t:'number'},{n:'status',l:'Status',t:'select',opts:['queued','in progress','completed','signed up'],def:'completed'},{n:'keyConcepts',l:'Key Concepts',t:'textarea',full:1},{n:'artifactsProduced',l:'Takeaways',t:'textarea',full:1}],
+   cols:['dateOccurred','programName','moduleOrLessonTitle','status'],title:r=>`${r.programName||'Module'}${r.moduleOrLessonTitle?' · '+r.moduleOrLessonTitle:''}`},
+  {id:'case_studies',label:'Case Studies',icon:'📊',
+   fields:[{n:'title',l:'Title',t:'text',req:1},{n:'dateOccurred',l:'Date Finished',t:'date'},{n:'durationMinutes',l:'Time Invested (min)',t:'number'},{n:'status',l:'Status',t:'select',opts:['drafting','ready','retired'],def:'drafting'},{n:'framework',l:'Framework',t:'text'},{n:'keyMetrics',l:'Key Metrics',t:'textarea',full:1},{n:'narrativeSummary',l:'Summary',t:'textarea',full:1},{n:'fileLinkOrLocation',l:'File Link',t:'text',full:1}],
+   cols:['title','status','framework','dateOccurred'],title:r=>r.title||'Case Study'},
+  {id:'jobs_applied',label:'Jobs Applied',icon:'💼',
+   fields:[{n:'companyLabel',l:'Company',t:'text',req:1},{n:'roleTitle',l:'Role Title',t:'text',req:1},{n:'dateOccurred',l:'Applied Date',t:'date',def:'today',req:1},{n:'durationMinutes',l:'Time on App (min)',t:'number',def:60},{n:'source',l:'Source',t:'select',opts:['LinkedIn','referral','direct','recruiter outreach','Work at a Startup','other']},{n:'applicationStatus',l:'Status',t:'select',opts:['applied','screen','hiring_manager','panel','offer','rejected','withdrawn','ghosted'],def:'applied'},{n:'applicationLink',l:'Application Link',t:'text',full:1},{n:'salaryRange',l:'Salary Range',t:'text'},{n:'locationType',l:'Location Type',t:'select',opts:['remote','hybrid','onsite']},{n:'notes',l:'Notes',t:'textarea',full:1}],
+   cols:['dateOccurred','companyLabel','roleTitle','applicationStatus'],title:r=>`${r.companyLabel||'Company'}${r.roleTitle?' · '+r.roleTitle:''}`},
+  {id:'resumes',label:'Resumes',icon:'📄',
+   fields:[{n:'versionLabel',l:'Version Label',t:'text',req:1},{n:'dateOccurred',l:'Date Created',t:'date',def:'today',req:1},{n:'durationMinutes',l:'Time Invested (min)',t:'number'},{n:'targetRoleType',l:'Target Role Type',t:'text'},{n:'status',l:'Status',t:'select',opts:['active','archived'],def:'active'},{n:'keyDifferentiatorsHighlighted',l:'Key Differentiators',t:'textarea',full:1},{n:'fileLinkOrLocation',l:'File Link',t:'text',full:1}],
+   cols:['dateOccurred','versionLabel','targetRoleType','status'],title:r=>r.versionLabel||'Resume'},
+  {id:'cover_letters',label:'Cover Letters',icon:'✉️',
+   fields:[{n:'companyLabel',l:'Company',t:'text',req:1},{n:'roleTitle',l:'Role Title',t:'text'},{n:'dateOccurred',l:'Date Drafted',t:'date',def:'today',req:1},{n:'durationMinutes',l:'Time Invested (min)',t:'number',def:45},{n:'status',l:'Status',t:'select',opts:['drafted','sent','retired'],def:'drafted'},{n:'keyHooks',l:'Key Hooks',t:'textarea',full:1},{n:'fileLinkOrLocation',l:'File Link',t:'text',full:1}],
+   cols:['dateOccurred','companyLabel','roleTitle','status'],title:r=>`${r.companyLabel||'Company'}${r.roleTitle?' · '+r.roleTitle:''}`},
+  {id:'networking',label:'Networking',icon:'🤝',
+   fields:[{n:'contactLabel',l:'Contact',t:'text',req:1},{n:'companyLabel',l:'Company',t:'text'},{n:'relationship',l:'Relationship',t:'select',opts:['alum','former colleague','recruiter','weak tie','mentor','peer','other']},{n:'dateOccurred',l:'Date',t:'date',def:'today',req:1},{n:'durationMinutes',l:'Duration (min)',t:'number',def:30},{n:'channel',l:'Channel',t:'select',opts:['LinkedIn','email','phone','in person','event']},{n:'summary',l:'Summary',t:'textarea',full:1},{n:'privateNotes',l:'Private Notes (collapsed on dashboard)',t:'textarea',full:1},{n:'nextSteps',l:'Next Steps',t:'textarea',full:1},{n:'nextStepDate',l:'Next Step Date',t:'date'},{n:'cadenceDays',l:'Cadence (days)',t:'number',def:30}],
+   cols:['dateOccurred','contactLabel','companyLabel','relationship'],title:r=>`${r.contactLabel||'Contact'}${r.companyLabel?' · '+r.companyLabel:''}`},
+  {id:'reflections',label:'Reflections',icon:'🪞',
+   fields:[{n:'dateOccurred',l:'Week Start Date',t:'date',def:'today',req:1},{n:'energyLevel',l:'Energy Level (1-5)',t:'number'},{n:'winsThisWeek',l:'Wins This Week',t:'textarea',full:1},{n:'struggles',l:'Struggles',t:'textarea',full:1},{n:'focusForNextWeek',l:'Focus for Next Week',t:'textarea',full:1}],
+   cols:['dateOccurred','energyLevel','winsThisWeek'],title:r=>`Week of ${r.dateOccurred||'?'}`}
+];
+const modMap = {};
+MODS.forEach(m => modMap[m.id] = m);
+
+// ── Seed ──────────────────────────────────────────────────────────
+function seedData() {
+  const t = '2026-05-07', wk = '2026-05-06', now = Date.now();
+  return {
+    _v: 8,
+    activities: [
+      {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'Episode with Nikhyl Singhal',guest:'Nikhyl Singhal',durationMinutes:75,status:'completed',keyTakeaways:"30k PMs may be laid off but ~8k will be rehired — bar is now AI first.\n\nMillennial generation challenge: pivoting while caring for young kids and aging parents who may be becoming dependents.\n\nThose who cross the chasm and become builders will thrive.",applicableTo:'AI fluency, career strategy',createdAt:now,updatedAt:now},
+      {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'How Anthropic Product Team Moves Faster Than Anyone Else',guest:'Cat Wu',durationMinutes:0,status:'in progress',keyTakeaways:"Product Sense is the most important skill in the current market.\n\nAlways be building and iterating — ship fast, learn faster.",applicableTo:'AI fluency, PM craft, career strategy',createdAt:now,updatedAt:now},
+      {id:uid(),type:'books',title:'James',author:'Percival Everett',status:'queued',source:"Recommended on Lenny's Podcast (Nikhyl Singhal episode)",dateOccurred:'',createdAt:now,updatedAt:now},
+      {id:uid(),type:'books',title:'The Culture Code',author:'Daniel Coyle',subtitle:'The Secrets of Highly Successful Groups',status:'reading',dateOccurred:'',source:'',keyConcepts:'',createdAt:now,updatedAt:now},
+      {id:uid(),type:'books',title:'Strong: Product People',author:'Petra Wille',subtitle:'A Complete Guide to Developing Great Product Managers',status:'reading',dateOccurred:'',source:'',keyConcepts:'',createdAt:now,updatedAt:now},
+      {id:uid(),type:'ai_modules',dateOccurred:t,programName:'Maven AI for Product Management',providerName:'Maven',moduleOrLessonTitle:'Memory',durationMinutes:60,status:'completed',keyConcepts:"PMs should own the memory decision framework — not leave it to engineering.\n\nKey questions every PM must answer:\n• What should the product remember?\n• How long should it remember?\n• How does it decide what is relevant?\n• Who controls the memory?\n• What are the failure modes?\n• Which memory technique to use: buffer, summary, or entity?",artifactsProduced:"Memory technique selection:\n- Buffer: simple, full context, high cost at scale\n- Summary: compressed, loses detail, good for long sessions\n- Entity: structured, queryable, best for relationship-heavy products\n\nDecision factors: cost, scale, project type",createdAt:now,updatedAt:now},
+      {id:uid(),type:'ai_modules',dateOccurred:t,programName:'Maven AI for Product Management',providerName:'Maven',moduleOrLessonTitle:'Capstone Project',durationMinutes:0,status:'signed up',keyConcepts:'',artifactsProduced:'',createdAt:now,updatedAt:now},
+      {id:uid(),type:'ai_modules',dateOccurred:t,programName:'Maven',providerName:'Maven',moduleOrLessonTitle:"How to Land Principal or Director Level Product Roles in 90 Days — Shobhit's Course",durationMinutes:60,status:'completed',keyConcepts:"Define your strategic vision — know where you win and where you have the strongest competitive advantage.\n\nSignature narrative: craft a story that only you can tell.\n\nInterview Agility: treat interview questions like feature requests from users — understand the need behind the ask before answering.\n\nMultiplier: use confidence as a strategy. Okay to show execution, but employers want someone who can think and lead.",artifactsProduced:'',createdAt:now,updatedAt:now},
+      {id:uid(),type:'networking',dateOccurred:wk,contactLabel:'Anjali Hansen',companyLabel:'Medtronic',relationship:'weak tie',channel:'event',summary:'Met at Boulder Startup Week.',nextSteps:'Send LinkedIn connection request and follow-up message.',nextStepDate:t,cadenceDays:30,createdAt:now,updatedAt:now},
+      {id:uid(),type:'networking',dateOccurred:wk,contactLabel:'Brian Andzejewicz',companyLabel:'Vitae / Crocs',relationship:'weak tie',channel:'event',summary:'Met at Boulder Startup Week. Brian runs Vitae (health coaching) and also works at Crocs.',nextSteps:'Reply to message.',nextStepDate:t,cadenceDays:30,createdAt:now,updatedAt:now},
+      {id:uid(),type:'networking',dateOccurred:wk,contactLabel:'Michelle Shampton',companyLabel:'Startup (Chief of Staff)',relationship:'weak tie',channel:'event',summary:'Met at Boulder Startup Week. Chief of Staff. Scheduled lunch for June 26.',nextSteps:'Lunch scheduled June 26.',nextStepDate:'2026-06-26',cadenceDays:60,createdAt:now,updatedAt:now},
+      {id:uid(),type:'networking',dateOccurred:t,contactLabel:'Byron Gomez',companyLabel:'Chef / Collaborator / TUDOR',relationship:'peer',channel:'in person',summary:'Met in person. Byron recommended Juicy Seafood in Aurora.',privateNotes:"Pollo Tico: Byron opened a Costa Rican fast-casual restaurant that ultimately failed — lost $200k.\n\nPersonal context: Byron is a DACA recipient. Moving on from Bruto.\n\nFuture focus:\n• Lobbying efforts\n• Consulting\n• Writing a book\n• TUDOR spokesperson\n• Trip to Costa Rica next year\n• Culinary school for aspiring low-income chefs\n\nBrought up concerns about AI and cybersecurity / internet failures with point-of-sale systems.",nextSteps:'Follow up on POS/AI topic.',cadenceDays:30,createdAt:now,updatedAt:now},
+      {id:uid(),type:'networking',dateOccurred:t,contactLabel:'Maven AI PM Mixer',companyLabel:'Maven',relationship:'other',channel:'event',summary:'Attended Maven AI PM community mixer.',nextSteps:'',cadenceDays:90,createdAt:now,updatedAt:now},
+      {id:uid(),type:'resumes',dateOccurred:'2026-05-07',versionLabel:'JenDeepa 2026 Resume — Active',targetRoleType:'Principal PM / Senior PM — AI-native, 0-to-1, PLG',status:'active',keyDifferentiatorsHighlighted:"• 0-to-1 DocV platform: Jumio + IATA Timatic, 207 passport nationalities, iOS/Android/Web\n• 87% digital self-service adoption, $2M/month new e-commerce revenue (check-in modernization)\n• Production AI: evals, RAG, agentic automation — not just familiarity\n• Trilingual PM with international travel domain expertise\n• Certifications: Pendo AI, Build Better, DeepLearning.AI Anthropic, Maven AI (in progress)",fileLinkOrLocation:'https://mrsspockdeepa.github.io/',createdAt:now,updatedAt:now}
+    ],
+    settings: {dailyHourTarget:6, balanceActivities:'hiking, painting, guitar, garden, reading, board games'},
+    todos: [
+      {id:uid(),title:'Build a portfolio page for Patrick Miller',status:'open',dateAdded:t}
+    ]
+  };
+}
+
+// ── Migration ──────────────────────────────────────────────────────
+function migrate(d) {
+  const now = Date.now(), t = '2026-05-07';
+  if (!d._v || d._v < 2) {
+    const mem = d.activities.find(a => a.type==='ai_modules' && a.moduleOrLessonTitle==='Memory' && a.programName==='Maven AI for Product Management' && !a.keyConcepts);
+    if (mem) { mem.keyConcepts = "PMs should own the memory decision framework.\n\nKey questions:\n• What should the product remember?\n• How long should it remember?\n• How does it decide what is relevant?\n• Who controls the memory?\n• What are the failure modes?\n• Which technique: buffer, summary, or entity?"; mem.status='completed'; mem.updatedAt=now; }
+    if (!d.activities.some(a => a.type==='ai_modules' && a.moduleOrLessonTitle==='Capstone Project' && a.programName==='Maven AI for Product Management'))
+      d.activities.push({id:uid(),type:'ai_modules',dateOccurred:t,programName:'Maven AI for Product Management',providerName:'Maven',moduleOrLessonTitle:'Capstone Project',durationMinutes:0,status:'signed up',keyConcepts:'',artifactsProduced:'',createdAt:now,updatedAt:now});
+  }
+  if (!d._v || d._v < 3) {
+    const existing = d.activities.find(a => a.type==='networking' && a.contactLabel==='Byron Gomez' && a.dateOccurred===t);
+    const byronNotes = "Pollo Tico: Byron opened a Costa Rican fast-casual restaurant that ultimately failed — lost $200k.\n\nPersonal context: Byron is a DACA recipient. Moving on from Bruto.\n\nFuture focus:\n• Lobbying efforts\n• Consulting\n• Writing a book\n• TUDOR spokesperson\n• Trip to Costa Rica next year\n• Culinary school for aspiring low-income chefs\n\nBrought up concerns about AI and cybersecurity / internet failures with point-of-sale systems.";
+    if (existing) { existing.summary='Met in person. Byron recommended Juicy Seafood in Aurora.'; existing.privateNotes=byronNotes; existing.channel='in person'; existing.updatedAt=now; }
+    else d.activities.push({id:uid(),type:'networking',dateOccurred:t,contactLabel:'Byron Gomez',companyLabel:'Chef / Collaborator / TUDOR',relationship:'peer',channel:'in person',summary:'Met in person. Byron recommended Juicy Seafood in Aurora.',privateNotes:byronNotes,nextSteps:'Follow up on POS/AI topic.',cadenceDays:30,createdAt:now,updatedAt:now});
+  }
+  if (!d._v || d._v < 4) {
+    if (!d.todos) d.todos = [];
+    if (!d.activities.some(a => a.type==='books' && a.title==='The Culture Code'))
+      d.activities.push({id:uid(),type:'books',title:'The Culture Code',author:'Daniel Coyle',subtitle:'The Secrets of Highly Successful Groups',status:'reading',dateOccurred:'',source:'',keyConcepts:'',createdAt:now,updatedAt:now});
+    if (!d.activities.some(a => a.type==='books' && a.title==='Strong: Product People'))
+      d.activities.push({id:uid(),type:'books',title:'Strong: Product People',author:'Petra Wille',subtitle:'A Complete Guide to Developing Great Product Managers',status:'reading',dateOccurred:'',source:'',keyConcepts:'',createdAt:now,updatedAt:now});
+    if (!d.activities.some(a => a.type==='podcasts' && a.guest==='Cat Wu'))
+      d.activities.push({id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'How Anthropic Product Team Moves Faster Than Anyone Else',guest:'Cat Wu',durationMinutes:0,status:'in progress',keyTakeaways:"Product Sense is the most important skill in the current market.\n\nAlways be building and iterating.",applicableTo:'AI fluency, PM craft, career strategy',createdAt:now,updatedAt:now});
+    if (!d.todos.some(td => td.title && td.title.includes('Patrick Miller')))
+      d.todos.push({id:uid(),title:'Build a portfolio page for Patrick Miller',status:'open',dateAdded:t});
+  }
+  if (!d._v || d._v < 5) {
+    const shobhitKey = "Define your strategic vision — know where you win and where you have the strongest competitive advantage.\n\nSignature narrative: craft a story that only you can tell.\n\nInterview Agility: treat interview questions like feature requests from users — understand the need behind the ask before answering.\n\nMultiplier: use confidence as a strategy. Okay to show execution, but employers want someone who can think and lead.";
+    if (!d.activities.some(a => a.type==='ai_modules' && a.keyConcepts && a.keyConcepts.includes('strategic vision'))) {
+      const shobhit = d.activities.find(a => a.type==='ai_modules' && a.moduleOrLessonTitle && a.moduleOrLessonTitle.includes('90 Days'));
+      if (shobhit) { shobhit.moduleOrLessonTitle = "How to Land Principal or Director Level Product Roles in 90 Days — Shobhit's Course"; shobhit.keyConcepts = shobhitKey; shobhit.updatedAt = now; }
+      else d.activities.push({id:uid(),type:'ai_modules',dateOccurred:t,programName:'Maven',providerName:'Maven',moduleOrLessonTitle:"How to Land Principal or Director Level Product Roles in 90 Days — Shobhit's Course",durationMinutes:60,status:'completed',keyConcepts:shobhitKey,artifactsProduced:'',createdAt:now,updatedAt:now});
+    }
+  }
+  if (!d._v || d._v < 6) {
+    if (!d.activities.some(a => a.type==='resumes' && a.versionLabel && a.versionLabel.includes('2026'))) {
+      d.activities.push({
+        id:uid(), type:'resumes', dateOccurred:'2026-05-07',
+        versionLabel:'JenDeepa 2026 Resume — Active',
+        targetRoleType:'Principal PM / Senior PM — AI-native, 0-to-1, PLG',
+        status:'active',
+        keyDifferentiatorsHighlighted:"• 0-to-1 DocV platform: Jumio + IATA Timatic, 207 passport nationalities, iOS/Android/Web\n• 87% digital self-service adoption, $2M/month new e-commerce revenue (check-in modernization)\n• Production AI: evals, RAG, agentic automation — not just familiarity\n• Trilingual PM with international travel domain expertise\n• Certifications: Pendo AI, Build Better, DeepLearning.AI Anthropic, Maven AI (in progress)",
+        fileLinkOrLocation:'https://mrsspockdeepa.github.io/',
+        createdAt:now, updatedAt:now
+      });
+    }
+  }
+  if (!d._v || d._v < 7) {
+    if (!d.activities.some(a => a.type==='case_studies' && a.title && a.title.includes('Dexcom'))) {
+      d.activities.push({
+        id:uid(), type:'case_studies', dateOccurred:'2026-05-07',
+        title:'Dexcom Type 2 — Product Case Study',
+        status:'ready',
+        framework:'Product Strategy / Growth',
+        keyMetrics:'',
+        narrativeSummary:'Case study exploring product strategy for Dexcom\'s Type 2 diabetes segment.',
+        fileLinkOrLocation:'https://mrsspockdeepa.github.io/dexcomtype2/',
+        createdAt:now, updatedAt:now
+      });
+    }
+  }
+  if (!d._v || d._v < 8) {
+    if (!d.activities.some(a => a.type==='case_studies' && a.title && a.title.includes('LinkedIn'))) {
+      d.activities.push({
+        id:uid(), type:'case_studies', dateOccurred:'2026-05-07',
+        title:'LinkedIn Premium — Product Case Study',
+        status:'ready',
+        framework:'Product Strategy / Growth',
+        keyMetrics:'',
+        narrativeSummary:'Case study exploring product strategy for LinkedIn Premium.',
+        fileLinkOrLocation:'https://mrsspockdeepa.github.io/linkedinpremium/',
+        createdAt:now, updatedAt:now
+      });
+    }
+  }
+  d._v = 8;
+  saveData(d);
+  return d;
+}
+
+// ── State ──────────────────────────────────────────────────────────
+let data = migrate(loadData() || seedData());
+let view = {name:'dashboard'};
+let modalState = null;
+let ddOpen = false;
+
+// ── Topbar ─────────────────────────────────────────────────────────
+function updateTopbar() {
+  const t = todayStr();
+  const hrs = data.activities.filter(a => a.dateOccurred===t).reduce((s,a) => s+(Number(a.durationMinutes)||0), 0) / 60;
+  const target = data.settings.dailyHourTarget || 6;
+  const pct = clamp((hrs/target)*100, 0, 100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-fill').className = 'prog-fill' + (hrs>=target?' done':'');
+  document.getElementById('prog-lbl').textContent = hrs.toFixed(1)+'h / '+target+'h today';
+  document.getElementById('bal-badge').style.display = hrs>=target ? '' : 'none';
+}
+
+// ── Nav ────────────────────────────────────────────────────────────
+function buildNav() {
+  const nav = document.getElementById('nav');
+  let h = `<div class="nav-item${view.name==='dashboard'?' active':''}" data-view="dashboard"><span class="ni">🏠</span>Dashboard</div>`;
+  h += `<div class="nav-item${view.name==='pipeline'?' active':''}" data-view="pipeline"><span class="ni">📋</span>Pipeline</div>`;
+  h += '<div class="nav-sec">Modules</div>';
+  MODS.forEach(m => { h += `<div class="nav-item${view.name==='module'&&view.modId===m.id?' active':''}" data-view="module" data-mod="${m.id}"><span class="ni">${m.icon}</span>${m.label}</div>`; });
+  h += '<div class="nav-sec">System</div>';
+  h += `<div class="nav-item${view.name==='settings'?' active':''}" data-view="settings"><span class="ni">⚙️</span>Settings</div>`;
+  nav.innerHTML = h;
+  nav.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => {
+    const v = el.dataset.view, m = el.dataset.mod;
+    view = m ? {name:v, modId:m} : {name:v};
+    render();
+  }));
+}
+
+// ── Dropdown ───────────────────────────────────────────────────────
+function buildDropdown() {
+  const menu = document.getElementById('dd-menu');
+  menu.innerHTML = MODS.map(m => `<div class="dd-item" data-mod="${m.id}">${m.icon} ${m.label}</div>`).join('');
+  menu.querySelectorAll('.dd-item').forEach(el => el.addEventListener('click', () => { ddOpen=false; menu.classList.remove('open'); openNew(el.dataset.mod); }));
+}
+
+// ── Nudges ─────────────────────────────────────────────────────────
+function getNudges() {
+  const ns = [];
+  data.activities.filter(a => a.type==='jobs_applied' && !['rejected','withdrawn','ghosted'].includes(a.applicationStatus))
+    .forEach(j => { const d=daysSince(j.updatedAt); if(d>14) ns.push('⏰  '+j.companyLabel+' ('+j.roleTitle+') has not moved in '+d+' days.'); });
+  data.activities.filter(a => a.type==='networking' && a.nextStepDate)
+    .forEach(n => { if(new Date(n.nextStepDate+'T00:00:00')<=new Date()) ns.push('🤝  '+n.contactLabel+': follow-up due — '+(n.nextSteps||'check in')); });
+  data.activities.filter(a => a.type==='recruiter_calls' && a.nextStepDate)
+    .forEach(r => { if(new Date(r.nextStepDate+'T00:00:00')<new Date()) ns.push('📞  '+r.contactLabel+': next step date passed.'); });
+  return ns;
+}
+
+// ── Global toggleEl ────────────────────────────────────────────────
+function toggleEl(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const hidden = el.style.display === 'none';
+  el.style.display = hidden ? '' : 'none';
+  if (btn) btn.textContent = hidden ? '▼ hide' : '▶ show';
+}
+
+// ── completeTodo & addTodoInline ───────────────────────────────────
+function completeTodo(id) {
+  if (!data.todos) data.todos = [];
+  const td = data.todos.find(x => x.id === id);
+  if (td) { td.status = td.status==='done' ? 'open' : 'done'; saveData(data); renderDashboard(); }
+}
+function addTodoInline() {
+  const inp = document.getElementById('todo-new-input');
+  if (!inp || !inp.value.trim()) return;
+  if (!data.todos) data.todos = [];
+  data.todos.push({id:uid(), title:inp.value.trim(), status:'open', dateAdded:todayStr()});
+  saveData(data);
+  renderDashboard();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────
+function renderDashboard() {
+  const t = todayStr();
+  const ws = (() => { const d=new Date(); d.setDate(d.getDate()-d.getDay()); return d.toISOString().slice(0,10); })();
+  const todayActs = data.activities.filter(a => a.dateOccurred===t);
+  const weekActs  = data.activities.filter(a => a.dateOccurred>=ws && a.dateOccurred<=t);
+  const hrs = todayActs.reduce((s,a) => s+(Number(a.durationMinutes)||0), 0) / 60;
+  const target = data.settings.dailyHourTarget || 6;
+  const pipe = data.activities.filter(a => a.type==='jobs_applied' && !['rejected','withdrawn','ghosted'].includes(a.applicationStatus));
+  const ns = getNudges();
+  const counts = MODS.map(m => ({...m, count:weekActs.filter(a=>a.type===m.id).length}));
+
+  let h = `<div class="page-title">Dashboard</div>
+  <div class="page-sub">${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+  <div class="grid3">
+    <div class="stat s1"><div class="stat-lbl">Today</div><div class="stat-val">${hrs.toFixed(1)}h</div><div class="stat-sub">of ${target}h &middot; ${todayActs.length} activit${todayActs.length===1?'y':'ies'}</div>${hrs>=target?'<div class="bal-tip">Target hit. Step into balance: '+data.settings.balanceActivities+'</div>':''}</div>
+    <div class="stat s2"><div class="stat-lbl">This Week</div><div class="stat-val">${weekActs.length}</div><div class="stat-sub">activities logged</div></div>
+    <div class="stat s3"><div class="stat-lbl">Pipeline</div><div class="stat-val">${pipe.length}</div><div class="stat-sub">active applications</div></div>
+  </div>`;
+
+  if (ns.length) h += '<div class="card"><h2>Nudges</h2>' + ns.map(n=>'<div class="nudge">'+n+'</div>').join('') + '</div>';
+
+  // Maven AI Program
+  const mavenMods = data.activities.filter(a => a.type==='ai_modules' && a.programName==='Maven AI for Product Management').sort((a,b)=>(a.dateOccurred||'').localeCompare(b.dateOccurred||''));
+  if (mavenMods.length) {
+    const pillFor = s => s==='completed'?'pill pill-done':s==='signed up'?'pill pill-signed':'pill pill-prog';
+    const lblFor  = s => s==='completed'?'done':s==='signed up'?'signed up':s||'in progress';
+    const memMod  = mavenMods.find(m => m.moduleOrLessonTitle==='Memory');
+    const tks     = memMod && memMod.keyConcepts ? memMod.keyConcepts.split('\n').filter(Boolean) : [];
+    h += '<div class="card maven-card"><h2>Maven AI Program</h2>';
+    h += '<div class="maven-header"><div class="maven-badge">🎓</div><div><div class="maven-program-title">Maven AI for Product Management</div><div class="maven-program-sub">'+mavenMods.length+' module'+(mavenMods.length===1?'':'s')+' &middot; '+mavenMods.filter(m=>m.status==='completed').length+' completed</div></div></div>';
+    h += '<div class="maven-mods">';
+    mavenMods.forEach(m => {
+      h += '<div class="maven-mod'+(m.moduleOrLessonTitle==='Capstone Project'?' capstone':'')+'" data-id="'+m.id+'">';
+      h += '<div class="maven-mod-info"><div class="t">'+(m.moduleOrLessonTitle||'Module')+'</div><div class="d">'+(fmtDate(m.dateOccurred)||'—')+(m.durationMinutes?' &middot; '+m.durationMinutes+'m':'')+'</div></div>';
+      h += '<span class="'+pillFor(m.status)+'">'+lblFor(m.status)+'</span></div>';
+    });
+    h += '</div>';
+    if (tks.length) {
+      h += '<div class="maven-section"><div class="maven-section-hd"><span>Memory Module &middot; Key Takeaways</span><button class="collapse-btn light" onclick="toggleEl(\'maven-tk-body\',this)">▶ show</button></div>';
+      h += '<div id="maven-tk-body" style="display:none;margin-top:8px">';
+      tks.forEach(tk => { h += '<div class="maven-tk-item">'+tk.replace(/^[•\-]\s*/,'')+'</div>'; });
+      h += '</div></div>';
+    }
+    h += '</div>';
+  }
+
+  // Today's activities
+  h += '<div class="card"><h2>Today\'s Activities</h2>';
+  if (!todayActs.length) {
+    h += '<div class="empty">Nothing logged today yet.</div>';
+  } else {
+    todayActs.forEach(a => {
+      const nid = 'pn-'+a.id;
+      const hasNotes = a.type==='networking' && a.privateNotes;
+      h += '<div class="act-row">';
+      h += '<div class="act-left"><div class="act-ico '+ICO_MAP[a.type]+'">'+modMap[a.type].icon+'</div><div><div class="act-title">'+modMap[a.type].title(a)+'</div><div class="act-meta">'+modMap[a.type].label+(a.durationMinutes?' &middot; '+a.durationMinutes+' min':'')+'</div></div></div>';
+      h += '<div class="act-actions">';
+      if (hasNotes) h += '<button class="collapse-btn dark" onclick="toggleEl(\''+nid+'\',this)">▶ show notes</button>';
+      h += '<span class="edit-lnk" data-id="'+a.id+'" data-type="'+a.type+'">Edit</span>';
+      h += '</div>';
+      if (hasNotes) h += '<div id="'+nid+'" class="private-notes" style="display:none">'+a.privateNotes+'</div>';
+      h += '</div>';
+    });
+  }
+  h += '</div>';
+
+  // Currently reading / in progress
+  const reading = data.activities.filter(a => a.type==='books' && a.status==='reading');
+  const inProg  = data.activities.filter(a => a.type==='podcasts' && a.status==='in progress');
+  if (reading.length || inProg.length) {
+    h += '<div class="card"><h2>Currently In Progress</h2>';
+    reading.forEach(b => { h += '<div class="act-row"><div class="act-left"><div class="act-ico ico-book">📚</div><div><div class="act-title">'+b.title+'</div><div class="act-meta">'+(b.author||'')+(b.subtitle?' &middot; '+b.subtitle:'')+' &middot; reading</div></div></div><span class="edit-lnk" data-id="'+b.id+'" data-type="books">Edit</span></div>'; });
+    inProg.forEach(p => { h += '<div class="act-row"><div class="act-left"><div class="act-ico ico-pod">🎧</div><div><div class="act-title">'+p.showName+(p.episodeTitle?' &middot; '+p.episodeTitle:'')+'</div><div class="act-meta">'+(p.guest?p.guest+' &middot; ':'')+'in progress</div></div></div><span class="edit-lnk" data-id="'+p.id+'" data-type="podcasts">Edit</span></div>'; });
+    h += '</div>';
+  }
+
+  // To Do
+  const todos = data.todos || [];
+  const open  = todos.filter(x => x.status!=='done');
+  const done  = todos.filter(x => x.status==='done');
+  h += '<div class="card"><h2 style="display:flex;align-items:center;justify-content:space-between"><span>To Do</span><span style="font-size:11px;color:#CBD5E1;font-weight:400">'+done.length+' done</span></h2>';
+  if (!open.length) h += '<div class="empty" style="padding:16px">All clear! 🎉</div>';
+  open.forEach(td => {
+    h += '<div class="todo-row"><div class="todo-check'+(td.status==='done'?' done':'')+'" onclick="completeTodo(\''+td.id+'\')">'+(td.status==='done'?'✓':'')+'</div>';
+    h += '<div class="todo-title'+(td.status==='done'?' done':'')+'">'+td.title+'</div>';
+    h += '<div class="todo-date">'+fmtDate(td.dateAdded)+'</div></div>';
+  });
+  h += '<div class="todo-add-form"><input class="todo-input" id="todo-new-input" placeholder="Add a task…" onkeydown="if(event.key===\'Enter\')addTodoInline()"/><button class="btn btn-primary btn-sm" onclick="addTodoInline()">Add</button></div></div>';
+
+  // Module counts
+  h += '<div class="card"><h2>This Week by Module</h2><div class="mod-grid">';
+  counts.forEach(m => { h += '<div class="mod-tile" data-mod="'+m.id+'"><div class="mod-tile-l"><span style="font-size:18px">'+m.icon+'</span>'+m.label+'</div><span class="mod-cnt'+(m.count===0?' z':'')+'">'+m.count+'</span></div>'; });
+  h += '</div></div>';
+
+  const el = document.getElementById('content');
+  el.innerHTML = h;
+  el.querySelectorAll('.maven-mod[data-id]').forEach(e => e.addEventListener('click', () => { const a=data.activities.find(x=>x.id===e.dataset.id); if(a) openEdit(a.type,a); }));
+  el.querySelectorAll('.edit-lnk').forEach(e => e.addEventListener('click', () => { const a=data.activities.find(x=>x.id===e.dataset.id); if(a) openEdit(e.dataset.type,a); }));
+  el.querySelectorAll('.mod-tile').forEach(e => e.addEventListener('click', () => { view={name:'module',modId:e.dataset.mod}; render(); }));
+}
+
+// ── Module list ────────────────────────────────────────────────────
+function renderModule() {
+  const mod = modMap[view.modId];
+  const el = document.getElementById('content');
+  el.innerHTML = '<div class="mod-header"><div class="mod-title"><span style="font-size:28px">'+mod.icon+'</span>'+mod.label+'</div><button class="btn btn-primary btn-sm" id="mod-new">+ New</button></div><input class="search" id="mod-search" placeholder="Search…"/><div class="card" id="mod-tbl"></div>';
+  function draw(q) {
+    let recs = data.activities.filter(a => a.type===view.modId);
+    if (q) { const s=q.toLowerCase(); recs=recs.filter(a=>JSON.stringify(a).toLowerCase().includes(s)); }
+    recs.sort((a,b) => (b.dateOccurred||'').localeCompare(a.dateOccurred||''));
+    const w = document.getElementById('mod-tbl');
+    if (!recs.length) { w.innerHTML='<div class="empty">No entries yet.</div>'; return; }
+    let t = '<div style="overflow-x:auto"><table><thead><tr>';
+    mod.cols.forEach(c => { const f=mod.fields.find(f=>f.n===c); t+='<th>'+(f?f.l:c)+'</th>'; });
+    t += '<th></th></tr></thead><tbody>';
+    recs.forEach(r => {
+      t += '<tr>';
+      mod.cols.forEach(c => { t += '<td>'+(c.toLowerCase().includes('date')?fmtDate(r[c]):(r[c]??''))+'</td>'; });
+      t += '<td><span class="edit-lnk" data-id="'+r.id+'">Open</span></td></tr>';
+    });
+    t += '</tbody></table></div>';
+    w.innerHTML = t;
+    w.querySelectorAll('.edit-lnk').forEach(e => e.addEventListener('click', () => openEdit(view.modId, recs.find(r=>r.id===e.dataset.id))));
+  }
+  draw('');
+  document.getElementById('mod-new').addEventListener('click', () => openNew(view.modId));
+  document.getElementById('mod-search').addEventListener('input', e => draw(e.target.value));
+}
+
+// ── Pipeline ───────────────────────────────────────────────────────
+function renderPipeline() {
+  const stages = ['applied','screen','hiring_manager','panel','offer'];
+  const byStage = {}; stages.forEach(s => byStage[s]=[]);
+  data.activities.filter(a => a.type==='jobs_applied' && stages.includes(a.applicationStatus)).forEach(a => byStage[a.applicationStatus].push(a));
+  let h = '<div class="page-title">📋 Pipeline</div><div class="page-sub" style="margin-bottom:20px">Active applications by stage</div><div class="pipe-grid">';
+  stages.forEach(s => {
+    h += '<div class="pipe-col"><div class="pipe-col-title">'+s.replace(/_/g,' ')+' <span style="opacity:.6">('+byStage[s].length+')</span></div>';
+    byStage[s].forEach(c => { const d=daysSince(c.updatedAt); h+='<div class="pipe-card'+(d>14?' stale':'')+'" data-id="'+c.id+'"><div class="pipe-co">'+c.companyLabel+'</div><div class="pipe-role">'+c.roleTitle+'</div><div class="pipe-days">'+d+'d in stage'+(d>14?' &middot; stale':'')+'</div></div>'; });
+    h += '</div>';
+  });
+  h += '</div>';
+  const el = document.getElementById('content'); el.innerHTML = h;
+  el.querySelectorAll('.pipe-card').forEach(e => e.addEventListener('click', () => { const a=data.activities.find(x=>x.id===e.dataset.id); if(a) openEdit(a.type,a); }));
+}
+
+// ── Settings ───────────────────────────────────────────────────────
+function renderSettings() {
+  const s = data.settings;
+  const el = document.getElementById('content');
+  el.innerHTML = '<div class="page-title">⚙️ Settings</div><div class="page-sub" style="margin-bottom:20px"></div>'
+    + '<div class="card"><h2>Daily Target and Balance</h2>'
+    + '<div class="s-row"><div><label class="s-lbl">Daily hour target</label><input type="number" class="s-inp" id="s-hrs" value="'+s.dailyHourTarget+'"/></div></div>'
+    + '<label class="s-lbl">Balance activities</label><input type="text" class="s-inp" id="s-bal" value="'+s.balanceActivities+'" style="margin-bottom:12px"/>'
+    + '<button class="btn btn-primary btn-sm" id="s-save">Save</button></div>'
+    + '<div class="card"><h2>Export and Import</h2>'
+    + '<button class="btn btn-primary btn-sm" id="s-export">Download JSON Backup</button>'
+    + '<div style="margin-top:14px"><label class="s-lbl">Paste JSON to import</label>'
+    + '<textarea class="s-inp" id="s-import" rows="4" style="font-family:monospace;font-size:12px" placeholder="Paste exported JSON here..."></textarea></div>'
+    + '<div style="margin-top:8px;display:flex;align-items:center;gap:10px"><button class="btn btn-ghost btn-sm" id="s-import-btn">Import</button><span id="s-msg" style="font-size:12px;color:#9CA3AF"></span></div></div>'
+    + '<div class="card"><h2 style="color:#B91C1C">Danger Zone</h2><button class="btn btn-danger btn-sm" id="s-wipe">Wipe All Data</button></div>';
+  document.getElementById('s-save').addEventListener('click', () => { data.settings.dailyHourTarget=Number(document.getElementById('s-hrs').value)||6; data.settings.balanceActivities=document.getElementById('s-bal').value; saveData(data); updateTopbar(); document.getElementById('s-msg').textContent='Saved.'; });
+  document.getElementById('s-export').addEventListener('click', () => { const b=JSON.stringify(data,null,2),url=URL.createObjectURL(new Blob([b],{type:'application/json'})); const a=document.createElement('a'); a.href=url; a.download='job-tracker-'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(url); });
+  document.getElementById('s-import-btn').addEventListener('click', () => { try { const p=JSON.parse(document.getElementById('s-import').value); if(!p.activities) throw 0; data={...data,...p,settings:{...data.settings,...(p.settings||{})}}; saveData(data); render(); document.getElementById('s-msg').textContent='Imported.'; } catch { document.getElementById('s-msg').textContent='Failed: check JSON format.'; } });
+  document.getElementById('s-wipe').addEventListener('click', () => { if(confirm('Wipe all data?')) { localStorage.removeItem(KEY); location.reload(); } });
+}
+
+// ── Modal ──────────────────────────────────────────────────────────
+function openNew(modId) { openModal(modMap[modId], makeRec(modId)); }
+function openEdit(type, rec) { openModal(modMap[type], rec); }
+function makeRec(modId) {
+  const rec = {id:uid(), type:modId, createdAt:Date.now(), updatedAt:Date.now()};
+  modMap[modId].fields.forEach(f => { rec[f.n] = f.def==='today' ? todayStr() : (f.def??''); });
+  return rec;
+}
+function openModal(mod, rec) {
+  modalState = {mod, rec:JSON.parse(JSON.stringify(rec))};
+  document.getElementById('modal-title').innerHTML = '<span style="font-size:20px">'+mod.icon+'</span> '+(rec.id?'Edit':'New')+' '+mod.label;
+  document.getElementById('modal-err').textContent = '';
+  let h = '';
+  mod.fields.forEach(f => {
+    const v = rec[f.n] ?? '';
+    const cls = 'field'+(f.full?' full':'');
+    let inp = '';
+    if (f.t==='textarea') inp = '<textarea id="mf-'+f.n+'" rows="3">'+v+'</textarea>';
+    else if (f.t==='select') inp = '<select id="mf-'+f.n+'"><option value="">Select...</option>'+(f.opts||[]).map(o=>'<option value="'+o+'"'+(v===o?' selected':'')+'>'+o+'</option>').join('')+'</select>';
+    else if (f.t==='date') inp = '<input type="date" id="mf-'+f.n+'" value="'+v+'">';
+    else if (f.t==='number') inp = '<input type="number" id="mf-'+f.n+'" value="'+v+'">';
+    else inp = '<input type="text" id="mf-'+f.n+'" value="'+v+'">';
+    h += '<div class="'+cls+'"><label>'+f.l+(f.req?' *':'')+'</label>'+inp+'</div>';
+  });
+  document.getElementById('modal-body').innerHTML = h;
+  const dw = document.getElementById('modal-del-wrap');
+  dw.innerHTML = rec.id ? '<button class="btn btn-danger btn-sm" id="modal-del">Delete</button>' : '';
+  if (rec.id) document.getElementById('modal-del').addEventListener('click', () => { if(confirm('Delete?')) delRec(rec.id); });
+  document.getElementById('overlay').style.display = 'flex';
+}
+function closeModal() { document.getElementById('overlay').style.display='none'; modalState=null; }
+function saveModal() {
+  if (!modalState) return;
+  const {mod, rec} = modalState;
+  for (const f of mod.fields) { if(f.req) { const v=document.getElementById('mf-'+f.n)?.value; if(!v) { document.getElementById('modal-err').textContent=f.l+' is required.'; return; } } }
+  mod.fields.forEach(f => { const el=document.getElementById('mf-'+f.n); if(!el) return; rec[f.n]=f.t==='number'?(el.value===''?'':Number(el.value)):el.value; });
+  rec.updatedAt = Date.now();
+  const idx = data.activities.findIndex(a => a.id===rec.id);
+  if (idx>=0) data.activities[idx]=rec; else data.activities.push(rec);
+  saveData(data); closeModal(); render();
+}
+function delRec(id) { data.activities=data.activities.filter(a=>a.id!==id); saveData(data); closeModal(); render(); }
+
+// ── Render ─────────────────────────────────────────────────────────
+function render() {
+  buildNav(); updateTopbar();
+  if (view.name==='dashboard') renderDashboard();
+  else if (view.name==='module') renderModule();
+  else if (view.name==='pipeline') renderPipeline();
+  else if (view.name==='settings') renderSettings();
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+buildDropdown();
+document.getElementById('dd-btn').addEventListener('click', e => { e.stopPropagation(); ddOpen=!ddOpen; document.getElementById('dd-menu').classList.toggle('open',ddOpen); });
+document.addEventListener('click', () => { if(ddOpen) { ddOpen=false; document.getElementById('dd-menu').classList.remove('open'); } });
+document.getElementById('modal-x').addEventListener('click', closeModal);
+document.getElementById('modal-cancel').addEventListener('click', closeModal);
+document.getElementById('modal-save').addEventListener('click', saveModal);
+document.getElementById('overlay').addEventListener('click', e => { if(e.target===document.getElementById('overlay')) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+render();
+</script>
+</body>
+</html>
