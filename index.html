@@ -149,6 +149,34 @@ tr:last-child td{border-bottom:none}
 .todo-add-form{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(139,92,246,.06)}
 .todo-input{flex:1;padding:7px 10px;border:1.5px solid rgba(139,92,246,.15);border-radius:8px;font-size:13px;outline:none;font-family:inherit;background:#FAFAFE}
 .todo-input:focus{border-color:#8B5CF6;background:#fff}
+/* ── Mobile ── */
+.menu-btn{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px;color:#7C3AED;line-height:1}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(19,17,28,.5);z-index:90}
+.sb-overlay.show{display:block}
+@media (max-width: 768px){
+  #sidebar{transform:translateX(-100%);transition:transform 240ms ease;z-index:100;width:240px}
+  #sidebar.open{transform:translateX(0)}
+  #main{margin-left:0}
+  #topbar{padding:10px 14px}
+  #content{padding:18px 14px;max-width:100%}
+  .menu-btn{display:block}
+  .grid3{grid-template-columns:1fr;gap:10px}
+  .stat-val{font-size:24px}
+  .mod-grid,.maven-mods{grid-template-columns:1fr}
+  .pipe-grid{grid-template-columns:repeat(5,minmax(160px,1fr));overflow-x:auto;padding-bottom:6px}
+  .modal-body{grid-template-columns:1fr;padding:16px;gap:11px}
+  .modal{margin:0;border-radius:14px}
+  .overlay{padding:10px}
+  .s-row{grid-template-columns:1fr}
+  .page-title{font-size:20px}
+  .card{padding:16px;border-radius:12px}
+  .btn{padding:7px 12px;font-size:12px}
+  table{font-size:12px}
+  th,td{padding:7px 8px}
+  .act-row{align-items:flex-start}
+  .act-actions{margin-top:4px}
+  .private-notes{margin-top:8px}
+}
 </style>
 </head>
 <body>
@@ -167,8 +195,10 @@ tr:last-child td{border-bottom:none}
       </a>
     </div>
   </aside>
+  <div class="sb-overlay" id="sb-overlay"></div>
   <div id="main">
     <div id="topbar">
+      <button class="menu-btn" id="menu-btn" aria-label="menu">☰</button>
       <div></div>
       <div class="dd-wrap">
         <button class="btn btn-primary" id="dd-btn">+ New Activity</button>
@@ -251,7 +281,7 @@ MODS.forEach(m => modMap[m.id] = m);
 function seedData() {
   const t = '2026-05-07', wk = '2026-05-06', now = Date.now();
   return {
-    _v: 12,
+    _v: 13,
     activities: [
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'Episode with Nikhyl Singhal',guest:'Nikhyl Singhal',durationMinutes:75,status:'completed',keyTakeaways:"30k PMs may be laid off but ~8k will be rehired — bar is now AI first.\n\nMillennial generation challenge: pivoting while caring for young kids and aging parents who may be becoming dependents.\n\nThose who cross the chasm and become builders will thrive.",applicableTo:'AI fluency, career strategy',createdAt:now,updatedAt:now},
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'How Anthropic Product Team Moves Faster Than Anyone Else',guest:'Cat Wu',durationMinutes:0,status:'in progress',keyTakeaways:"Product Sense is the most important skill in the current market.\n\nAlways be building and iterating — ship fast, learn faster.",applicableTo:'AI fluency, PM craft, career strategy',createdAt:now,updatedAt:now},
@@ -385,7 +415,16 @@ function migrate(d) {
       d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:'2026-05-07',companyLabel:'HPE',roleTitle:'Role 2 — edit title',applicationStatus:'applied',source:'direct',durationMinutes:60,notes:'Two roles applied. Update titles from job postings.',createdAt:now,updatedAt:now});
     }
   }
-  d._v = 12;
+  if (!d._v || d._v < 13) {
+    // Two more NextGen Healthcare applications (in addition to v9 entries)
+    d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:'2026-05-07',companyLabel:'NextGen Healthcare',roleTitle:'Role A — edit title',applicationStatus:'applied',source:'direct',durationMinutes:60,notes:'Second batch — update titles from postings.',createdAt:now,updatedAt:now});
+    d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:'2026-05-07',companyLabel:'NextGen Healthcare',roleTitle:'Role B — edit title',applicationStatus:'applied',source:'direct',durationMinutes:60,notes:'Second batch — update titles from postings.',createdAt:now,updatedAt:now});
+    // Eddie Burns at Confluence
+    if (!d.activities.some(a => a.type==='networking' && a.contactLabel==='Eddie Burns')) {
+      d.activities.push({id:uid(),type:'networking',dateOccurred:'2026-05-07',contactLabel:'Eddie Burns',companyLabel:'Confluence',relationship:'weak tie',channel:'LinkedIn',summary:'Reached out about a role at Confluence.',nextSteps:'Wait for reply. Follow up in 5 days if no response.',nextStepDate:'2026-05-12',cadenceDays:14,createdAt:now,updatedAt:now});
+    }
+  }
+  d._v = 13;
   saveData(d);
   return d;
 }
@@ -409,6 +448,7 @@ function buildNav() {
   nav.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => {
     const v = el.dataset.view, m = el.dataset.mod;
     view = m ? {name:v, modId:m} : {name:v};
+    if (window.innerWidth <= 768) toggleSidebar(false);
     render();
   }));
 }
@@ -674,6 +714,14 @@ function render() {
 }
 
 // ── Init ───────────────────────────────────────────────────────────
+function toggleSidebar(open){
+  const sb=document.getElementById('sidebar'), ov=document.getElementById('sb-overlay');
+  const isOpen = typeof open==='boolean' ? open : !sb.classList.contains('open');
+  sb.classList.toggle('open', isOpen);
+  ov.classList.toggle('show', isOpen);
+}
+document.getElementById('menu-btn').addEventListener('click', e=>{ e.stopPropagation(); toggleSidebar(); });
+document.getElementById('sb-overlay').addEventListener('click', ()=>toggleSidebar(false));
 buildDropdown();
 document.getElementById('dd-btn').addEventListener('click', e => { e.stopPropagation(); ddOpen=!ddOpen; document.getElementById('dd-menu').classList.toggle('open',ddOpen); });
 document.addEventListener('click', () => { if(ddOpen) { ddOpen=false; document.getElementById('dd-menu').classList.remove('open'); } });
