@@ -22,12 +22,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:#1e1b4b;f
 .nav-item .ni{width:18px;text-align:center}
 #main{flex:1;margin-left:224px;display:flex;flex-direction:column}
 #topbar{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(139,92,246,.1);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.prog-wrap{display:flex;align-items:center;gap:10px}
-.prog-track{width:130px;height:6px;background:#E9E3FF;border-radius:10px;overflow:hidden}
-.prog-fill{height:100%;background:linear-gradient(90deg,#8B5CF6,#EC4899);border-radius:10px;transition:width .4s}
-.prog-fill.done{background:linear-gradient(90deg,#10b981,#34d399)}
-.prog-lbl{font-size:12px;color:#6D6FA0;font-weight:500}
-.badge-bal{font-size:11px;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);color:#065f46;padding:3px 10px;border-radius:20px;font-weight:600}
 #content{padding:28px;max-width:900px}
 .btn{padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all 120ms;font-family:inherit}
 .btn-primary{background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;box-shadow:0 2px 12px rgba(139,92,246,.35)}
@@ -175,11 +169,7 @@ tr:last-child td{border-bottom:none}
   </aside>
   <div id="main">
     <div id="topbar">
-      <div class="prog-wrap">
-        <div class="prog-track"><div id="prog-fill" class="prog-fill" style="width:0%"></div></div>
-        <span id="prog-lbl" class="prog-lbl">0h / 6h today</span>
-        <span id="bal-badge" class="badge-bal" style="display:none">✨ Balance time</span>
-      </div>
+      <div></div>
       <div class="dd-wrap">
         <button class="btn btn-primary" id="dd-btn">+ New Activity</button>
         <div class="dd-menu" id="dd-menu"></div>
@@ -261,7 +251,7 @@ MODS.forEach(m => modMap[m.id] = m);
 function seedData() {
   const t = '2026-05-07', wk = '2026-05-06', now = Date.now();
   return {
-    _v: 10,
+    _v: 12,
     activities: [
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'Episode with Nikhyl Singhal',guest:'Nikhyl Singhal',durationMinutes:75,status:'completed',keyTakeaways:"30k PMs may be laid off but ~8k will be rehired — bar is now AI first.\n\nMillennial generation challenge: pivoting while caring for young kids and aging parents who may be becoming dependents.\n\nThose who cross the chasm and become builders will thrive.",applicableTo:'AI fluency, career strategy',createdAt:now,updatedAt:now},
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'How Anthropic Product Team Moves Faster Than Anyone Else',guest:'Cat Wu',durationMinutes:0,status:'in progress',keyTakeaways:"Product Sense is the most important skill in the current market.\n\nAlways be building and iterating — ship fast, learn faster.",applicableTo:'AI fluency, PM craft, career strategy',createdAt:now,updatedAt:now},
@@ -276,7 +266,9 @@ function seedData() {
       {id:uid(),type:'networking',dateOccurred:wk,contactLabel:'Michelle Shampton',companyLabel:'Startup (Chief of Staff)',relationship:'weak tie',channel:'event',summary:'Met at Boulder Startup Week. Chief of Staff. Scheduled lunch for June 26.',nextSteps:'Lunch scheduled June 26.',nextStepDate:'2026-06-26',cadenceDays:60,createdAt:now,updatedAt:now},
       {id:uid(),type:'networking',dateOccurred:t,contactLabel:'Byron Gomez',companyLabel:'Chef / Collaborator / TUDOR',relationship:'peer',channel:'in person',summary:'Met in person. Byron recommended Juicy Seafood in Aurora.',privateNotes:"Pollo Tico: Byron opened a Costa Rican fast-casual restaurant that ultimately failed — lost $200k.\n\nPersonal context: Byron is a DACA recipient. Moving on from Bruto.\n\nFuture focus:\n• Lobbying efforts\n• Consulting\n• Writing a book\n• TUDOR spokesperson\n• Trip to Costa Rica next year\n• Culinary school for aspiring low-income chefs\n\nBrought up concerns about AI and cybersecurity / internet failures with point-of-sale systems.",nextSteps:'Follow up on POS/AI topic.',cadenceDays:30,createdAt:now,updatedAt:now},
       {id:uid(),type:'networking',dateOccurred:t,contactLabel:'Maven AI PM Mixer',companyLabel:'Maven',relationship:'other',channel:'event',summary:'Attended Maven AI PM community mixer.',nextSteps:'',cadenceDays:90,createdAt:now,updatedAt:now},
-      {id:uid(),type:'resumes',dateOccurred:'2026-05-07',versionLabel:'JenDeepa 2026 Resume — Active',targetRoleType:'Principal PM / Senior PM — AI-native, 0-to-1, PLG',status:'active',keyDifferentiatorsHighlighted:"• 0-to-1 DocV platform: Jumio + IATA Timatic, 207 passport nationalities, iOS/Android/Web\n• 87% digital self-service adoption, $2M/month new e-commerce revenue (check-in modernization)\n• Production AI: evals, RAG, agentic automation — not just familiarity\n• Trilingual PM with international travel domain expertise\n• Certifications: Pendo AI, Build Better, DeepLearning.AI Anthropic, Maven AI (in progress)",fileLinkOrLocation:'https://mrsspockdeepa.github.io/',createdAt:now,updatedAt:now}
+      {id:uid(),type:'resumes',dateOccurred:'2026-05-07',versionLabel:'JenDeepa 2026 Resume — Active',targetRoleType:'Principal PM / Senior PM — AI-native, 0-to-1, PLG',status:'active',keyDifferentiatorsHighlighted:"• 0-to-1 DocV platform: Jumio + IATA Timatic, 207 passport nationalities, iOS/Android/Web\n• 87% digital self-service adoption, $2M/month new e-commerce revenue (check-in modernization)\n• Production AI: evals, RAG, agentic automation — not just familiarity\n• Trilingual PM with international travel domain expertise\n• Certifications: Pendo AI, Build Better, DeepLearning.AI Anthropic, Maven AI (in progress)",fileLinkOrLocation:'https://mrsspockdeepa.github.io/',createdAt:now,updatedAt:now},
+      {id:uid(),type:'case_studies',dateOccurred:'2026-05-07',title:'Dexcom Type 2 — Product Case Study',status:'ready',framework:'Product Strategy / Growth',keyMetrics:'',narrativeSummary:"Case study exploring product strategy for Dexcom's Type 2 diabetes segment.",fileLinkOrLocation:'https://mrsspockdeepa.github.io/dexcomtype2/',createdAt:now,updatedAt:now},
+      {id:uid(),type:'case_studies',dateOccurred:'2026-05-07',title:'LinkedIn Premium — Product Case Study',status:'ready',framework:'Product Strategy / Growth',keyMetrics:'',narrativeSummary:'Case study exploring product strategy for LinkedIn Premium.',fileLinkOrLocation:'https://mrsspockdeepa.github.io/linkedinpremium/',createdAt:now,updatedAt:now}
     ],
     settings: {dailyHourTarget:6, balanceActivities:'hiking, painting, guitar, garden, reading, board games'},
     todos: [
@@ -381,7 +373,19 @@ function migrate(d) {
       d.activities.push({id:uid(),type:'networking',dateOccurred:'2026-05-07',contactLabel:'Karisa',companyLabel:'ezCater',relationship:'recruiter',channel:'email',summary:'Emailed asking if ezCater would consider me for any other open roles.',nextSteps:'Follow up if no response in 5 days.',nextStepDate:'2026-05-12',cadenceDays:14,createdAt:now,updatedAt:now});
     }
   }
-  d._v = 10;
+  if (!d._v || d._v < 11) {
+    if (!d.activities.some(a => a.type==='case_studies' && a.title && a.title.includes('Dexcom')))
+      d.activities.push({id:uid(),type:'case_studies',dateOccurred:'2026-05-07',title:'Dexcom Type 2 — Product Case Study',status:'ready',framework:'Product Strategy / Growth',keyMetrics:'',narrativeSummary:"Case study exploring product strategy for Dexcom's Type 2 diabetes segment.",fileLinkOrLocation:'https://mrsspockdeepa.github.io/dexcomtype2/',createdAt:now,updatedAt:now});
+    if (!d.activities.some(a => a.type==='case_studies' && a.title && a.title.includes('LinkedIn')))
+      d.activities.push({id:uid(),type:'case_studies',dateOccurred:'2026-05-07',title:'LinkedIn Premium — Product Case Study',status:'ready',framework:'Product Strategy / Growth',keyMetrics:'',narrativeSummary:'Case study exploring product strategy for LinkedIn Premium.',fileLinkOrLocation:'https://mrsspockdeepa.github.io/linkedinpremium/',createdAt:now,updatedAt:now});
+  }
+  if (!d._v || d._v < 12) {
+    if (!d.activities.some(a => a.type==='jobs_applied' && a.companyLabel==='HPE')) {
+      d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:'2026-05-07',companyLabel:'HPE',roleTitle:'Role 1 — edit title',applicationStatus:'applied',source:'direct',durationMinutes:60,notes:'Two roles applied. Update titles from job postings.',createdAt:now,updatedAt:now});
+      d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:'2026-05-07',companyLabel:'HPE',roleTitle:'Role 2 — edit title',applicationStatus:'applied',source:'direct',durationMinutes:60,notes:'Two roles applied. Update titles from job postings.',createdAt:now,updatedAt:now});
+    }
+  }
+  d._v = 12;
   saveData(d);
   return d;
 }
@@ -391,18 +395,6 @@ let data = migrate(loadData() || seedData());
 let view = {name:'dashboard'};
 let modalState = null;
 let ddOpen = false;
-
-// ── Topbar ─────────────────────────────────────────────────────────
-function updateTopbar() {
-  const t = todayStr();
-  const hrs = data.activities.filter(a => a.dateOccurred===t).reduce((s,a) => s+(Number(a.durationMinutes)||0), 0) / 60;
-  const target = data.settings.dailyHourTarget || 6;
-  const pct = clamp((hrs/target)*100, 0, 100);
-  document.getElementById('prog-fill').style.width = pct+'%';
-  document.getElementById('prog-fill').className = 'prog-fill' + (hrs>=target?' done':'');
-  document.getElementById('prog-lbl').textContent = hrs.toFixed(1)+'h / '+target+'h today';
-  document.getElementById('bal-badge').style.display = hrs>=target ? '' : 'none';
-}
 
 // ── Nav ────────────────────────────────────────────────────────────
 function buildNav() {
@@ -470,8 +462,6 @@ function renderDashboard() {
   const ws = (() => { const d=new Date(); d.setDate(d.getDate()-d.getDay()); return d.toISOString().slice(0,10); })();
   const todayActs = data.activities.filter(a => a.dateOccurred===t);
   const weekActs  = data.activities.filter(a => a.dateOccurred>=ws && a.dateOccurred<=t);
-  const hrs = todayActs.reduce((s,a) => s+(Number(a.durationMinutes)||0), 0) / 60;
-  const target = data.settings.dailyHourTarget || 6;
   const pipe = data.activities.filter(a => a.type==='jobs_applied' && !['rejected','withdrawn','ghosted'].includes(a.applicationStatus));
   const ns = getNudges();
   const counts = MODS.map(m => ({...m, count:weekActs.filter(a=>a.type===m.id).length}));
@@ -479,7 +469,7 @@ function renderDashboard() {
   let h = `<div class="page-title">Dashboard</div>
   <div class="page-sub">${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
   <div class="grid3">
-    <div class="stat s1"><div class="stat-lbl">Today</div><div class="stat-val">${hrs.toFixed(1)}h</div><div class="stat-sub">of ${target}h &middot; ${todayActs.length} activit${todayActs.length===1?'y':'ies'}</div>${hrs>=target?'<div class="bal-tip">Target hit. Step into balance: '+data.settings.balanceActivities+'</div>':''}</div>
+    <div class="stat s1"><div class="stat-lbl">Today</div><div class="stat-val">${todayActs.length}</div><div class="stat-sub">activit${todayActs.length===1?'y':'ies'} logged</div></div>
     <div class="stat s2"><div class="stat-lbl">This Week</div><div class="stat-val">${weekActs.length}</div><div class="stat-sub">activities logged</div></div>
     <div class="stat s3"><div class="stat-lbl">Pipeline</div><div class="stat-val">${pipe.length}</div><div class="stat-sub">active applications</div></div>
   </div>`;
@@ -676,7 +666,7 @@ function delRec(id) { data.activities=data.activities.filter(a=>a.id!==id); save
 
 // ── Render ─────────────────────────────────────────────────────────
 function render() {
-  buildNav(); updateTopbar();
+  buildNav();
   if (view.name==='dashboard') renderDashboard();
   else if (view.name==='module') renderModule();
   else if (view.name==='pipeline') renderPipeline();
