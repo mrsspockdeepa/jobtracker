@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -262,7 +261,7 @@ MODS.forEach(m => modMap[m.id] = m);
 function seedData() {
   const t = '2026-05-07', wk = '2026-05-06', now = Date.now();
   return {
-    _v: 8,
+    _v: 10,
     activities: [
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'Episode with Nikhyl Singhal',guest:'Nikhyl Singhal',durationMinutes:75,status:'completed',keyTakeaways:"30k PMs may be laid off but ~8k will be rehired — bar is now AI first.\n\nMillennial generation challenge: pivoting while caring for young kids and aging parents who may be becoming dependents.\n\nThose who cross the chasm and become builders will thrive.",applicableTo:'AI fluency, career strategy',createdAt:now,updatedAt:now},
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'How Anthropic Product Team Moves Faster Than Anyone Else',guest:'Cat Wu',durationMinutes:0,status:'in progress',keyTakeaways:"Product Sense is the most important skill in the current market.\n\nAlways be building and iterating — ship fast, learn faster.",applicableTo:'AI fluency, PM craft, career strategy',createdAt:now,updatedAt:now},
@@ -361,7 +360,28 @@ function migrate(d) {
       });
     }
   }
-  d._v = 8;
+  if (!d._v || d._v < 9) {
+    const t9 = '2026-05-07';
+    if (!d.activities.some(a => a.type==='jobs_applied' && a.companyLabel==='Next Gen Health Care')) {
+      d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:t9,companyLabel:'Next Gen Health Care',roleTitle:'Product Manager — Role 1 (edit title)',applicationStatus:'applied',source:'direct',durationMinutes:60,salaryRange:'',locationType:'',notes:'Two PM roles applied. Update title from job posting.',createdAt:now,updatedAt:now});
+      d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:t9,companyLabel:'Next Gen Health Care',roleTitle:'Product Manager — Role 2 (edit title)',applicationStatus:'applied',source:'direct',durationMinutes:60,salaryRange:'',locationType:'',notes:'Two PM roles applied. Update title from job posting.',createdAt:now,updatedAt:now});
+    }
+    // AI PM Mixer — update existing or add
+    const mixer = d.activities.find(a => a.type==='networking' && a.contactLabel==='Maven AI PM Mixer');
+    if (mixer) {
+      mixer.summary = 'Attended Maven AI PM community mixer. Met 9 people — add individual contacts as they follow up.';
+      mixer.dateOccurred = t9;
+      mixer.updatedAt = now;
+    } else {
+      d.activities.push({id:uid(),type:'networking',dateOccurred:t9,contactLabel:'Maven AI PM Mixer',companyLabel:'Maven',relationship:'other',channel:'event',summary:'Attended Maven AI PM community mixer. Met 9 people — add individual contacts as they follow up.',nextSteps:'Log individual contacts as names come in.',cadenceDays:90,createdAt:now,updatedAt:now});
+    }
+  }
+  if (!d._v || d._v < 10) {
+    if (!d.activities.some(a => a.type==='networking' && a.contactLabel==='Karisa' && a.companyLabel==='ezCater')) {
+      d.activities.push({id:uid(),type:'networking',dateOccurred:'2026-05-07',contactLabel:'Karisa',companyLabel:'ezCater',relationship:'recruiter',channel:'email',summary:'Emailed asking if ezCater would consider me for any other open roles.',nextSteps:'Follow up if no response in 5 days.',nextStepDate:'2026-05-12',cadenceDays:14,createdAt:now,updatedAt:now});
+    }
+  }
+  d._v = 10;
   saveData(d);
   return d;
 }
