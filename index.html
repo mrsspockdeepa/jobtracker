@@ -149,6 +149,19 @@ tr:last-child td{border-bottom:none}
 .todo-add-form{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(139,92,246,.06)}
 .todo-input{flex:1;padding:7px 10px;border:1.5px solid rgba(139,92,246,.15);border-radius:8px;font-size:13px;outline:none;font-family:inherit;background:#FAFAFE}
 .todo-input:focus{border-color:#8B5CF6;background:#fff}
+/* ── Interview Prep ── */
+.ip-row{padding:14px 0;border-bottom:1px solid rgba(139,92,246,.06)}
+.ip-row:last-child{border-bottom:none;padding-bottom:0}
+.ip-row:first-child{padding-top:0}
+.ip-q-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.ip-q{font-size:14px;font-weight:600;color:#1e1b4b;flex:1;min-width:200px;line-height:1.45}
+.ip-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.ip-answer{margin-top:12px;padding:14px 16px;background:#FAFAFE;border:1px solid rgba(139,92,246,.12);border-radius:10px;font-size:13px;line-height:1.65;color:#374151;white-space:pre-wrap}
+.ip-pill-draft{background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700}
+.ip-pill-practicing{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700}
+.ip-pill-ready{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700}
+.ip-cat-hd{font-size:11px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.ip-cat-count{background:rgba(139,92,246,.1);color:#8B5CF6;padding:1px 7px;border-radius:10px;font-size:10px}
 /* ── Mobile ── */
 .menu-btn{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px;color:#7C3AED;line-height:1}
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(19,17,28,.5);z-index:90}
@@ -272,7 +285,10 @@ const MODS = [
    cols:['dateOccurred','contactLabel','companyLabel','relationship'],title:r=>`${r.contactLabel||'Contact'}${r.companyLabel?' · '+r.companyLabel:''}`},
   {id:'reflections',label:'Reflections',icon:'🪞',
    fields:[{n:'dateOccurred',l:'Week Start Date',t:'date',def:'today',req:1},{n:'energyLevel',l:'Energy Level (1-5)',t:'number'},{n:'winsThisWeek',l:'Wins This Week',t:'textarea',full:1},{n:'struggles',l:'Struggles',t:'textarea',full:1},{n:'focusForNextWeek',l:'Focus for Next Week',t:'textarea',full:1}],
-   cols:['dateOccurred','energyLevel','winsThisWeek'],title:r=>`Week of ${r.dateOccurred||'?'}`}
+   cols:['dateOccurred','energyLevel','winsThisWeek'],title:r=>`Week of ${r.dateOccurred||'?'}`},
+  {id:'interview_prep',label:'Interview Prep',icon:'🎯',hidden:true,
+   fields:[{n:'category',l:'Category',t:'select',opts:['Product Critique','Product Design','AI Product Taste','Healthcare','Prioritization'],req:1},{n:'question',l:'Question',t:'textarea',full:1,req:1},{n:'answer',l:'Answer / Draft',t:'textarea',full:1},{n:'status',l:'Status',t:'select',opts:['draft','practicing','ready'],def:'draft'},{n:'dateOccurred',l:'Last Practiced',t:'date'},{n:'notes',l:'Notes',t:'textarea',full:1}],
+   cols:['category','question','status'],title:r=>r.question||'Question'}
 ];
 const modMap = {};
 MODS.forEach(m => modMap[m.id] = m);
@@ -281,7 +297,7 @@ MODS.forEach(m => modMap[m.id] = m);
 function seedData() {
   const t = '2026-05-07', wk = '2026-05-06', now = Date.now();
   return {
-    _v: 13,
+    _v: 15,
     activities: [
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'Episode with Nikhyl Singhal',guest:'Nikhyl Singhal',durationMinutes:75,status:'completed',keyTakeaways:"30k PMs may be laid off but ~8k will be rehired — bar is now AI first.\n\nMillennial generation challenge: pivoting while caring for young kids and aging parents who may be becoming dependents.\n\nThose who cross the chasm and become builders will thrive.",applicableTo:'AI fluency, career strategy',createdAt:now,updatedAt:now},
       {id:uid(),type:'podcasts',dateOccurred:t,showName:"Lenny's Podcast",episodeTitle:'How Anthropic Product Team Moves Faster Than Anyone Else',guest:'Cat Wu',durationMinutes:0,status:'in progress',keyTakeaways:"Product Sense is the most important skill in the current market.\n\nAlways be building and iterating — ship fast, learn faster.",applicableTo:'AI fluency, PM craft, career strategy',createdAt:now,updatedAt:now},
@@ -424,7 +440,51 @@ function migrate(d) {
       d.activities.push({id:uid(),type:'networking',dateOccurred:'2026-05-07',contactLabel:'Eddie Burns',companyLabel:'Confluence',relationship:'weak tie',channel:'LinkedIn',summary:'Reached out about a role at Confluence.',nextSteps:'Wait for reply. Follow up in 5 days if no response.',nextStepDate:'2026-05-12',cadenceDays:14,createdAt:now,updatedAt:now});
     }
   }
-  d._v = 13;
+  if (!d._v || d._v < 14) {
+    if (!d.activities.some(a => a.type==='interview_prep')) {
+      const ip = (cat, q, ans) => ({id:uid(),type:'interview_prep',category:cat,question:q,answer:ans,status:'draft',createdAt:now,updatedAt:now});
+      d.activities.push(
+        ip('Product Critique','What product do you love and why?',
+"Anthropic's Claude. Three things stand out from a PM lens:\n\n• It makes constraints visible — refusals feel values-driven, not arbitrary\n• It adapts response style to context (terse vs. expansive) without explicit configuration\n• Artifacts and visualizations show product judgment about when chat is the wrong interface\n\nWhat I admire most: willingness to say \"I don't know\" or push back. Most AI products optimize for confidence; Claude often optimizes for accuracy and trust, which is a rarer product instinct.\n\nWhat I'd improve: discoverability. Advanced features (Projects, Files, MCP, artifacts) are buried. New users don't know what they don't know. I'd invest in guided onboarding that surfaces high-value workflows based on the first three prompts, plus contextual feature suggestions when intent matches an unused capability.\n\nTradeoff: progressive disclosure can feel paternalistic for power users, so I'd make the surfacing dismissible."),
+        ip('Product Critique','Critique LinkedIn',
+"I have a public case study at mrsspockdeepa.github.io/linkedinpremium — I'll summarize the headline.\n\nLinkedIn's stated purpose is professional identity and career growth, but the product has drifted into a content-engagement loop. Three target users: active job seekers, recruiters, content creators.\n\nThe job seeker journey is the most broken — apply flow is inconsistent (some employer sites, some Easy Apply), recommended job relevance is poor (volume over fit), and there's no way to track applications inside the platform.\n\nI'd prioritize the job seeker because it's LinkedIn's most defensible value. Solution: an Application Hub that consolidates applied roles, tracks status across employer ATS via webhooks, and surfaces real-time signal — recruiter views, similar roles, mutual connections at the company.\n\nMetrics: applications per session, recruiter response rate, time-to-status-update, paid conversion uplift.\n\nTradeoff: this could cannibalize current Premium features if pushed to free tier. I'd run it as a tiered rollout with deeper analytics behind the paywall."),
+        ip('Product Design','Improve the airport experience',
+"I led check-in modernization at Alaska Airlines, so I'll ground this in real data.\n\nTarget user: connecting domestic-to-international travelers — highest anxiety, lowest tolerance for friction.\n\nValidated pain points:\n• Document verification at the gate fails on a meaningful portion of international cases (misread passports, visa mismatches)\n• Travelers don't trust digital channels for international rules\n• Self-service drops sharply for international itineraries\n\nI'd prioritize pre-flight document verification — get the failure point out of the gate and into a 24-hour pre-departure window where users have time and resources to fix issues.\n\nThat's exactly what I built with DocV: Jumio computer vision plus the IATA Timatic rules engine, 207 passport nationalities, deployed iOS/Android/Web for both Alaska and Hawaiian Airlines. Self-service adoption rose to 87% and we saw $2M+/month in new ancillary revenue from the freed-up flow.\n\nKey tradeoff: heavy investment in AI/CV reliability. False rejects damage trust faster than false accepts."),
+        ip('Product Design','Design a healthcare AI assistant',
+"Clarifying first: which user — patient, clinician, or care coordinator? I'll choose primary care clinicians because the burnout problem is acute and well-documented.\n\nPain point validated by AMA studies: clinicians spend 1-2 hours on administrative work per hour of patient care. Documentation and chart prep are the biggest single buckets.\n\nMVP: ambient AI scribe + chart preparer. Listens during the visit, drafts the SOAP note, pre-loads relevant history (last 3 visits, active meds, flagged labs) into a one-page brief 5 minutes before the appointment.\n\nHuman-in-the-loop: clinician signs every note. Confidence indicators on extracted commitments. One-tap override.\n\nRisks: hallucinated commitments (a critical safety issue in healthcare), HIPAA compliance, alert fatigue if confidence is noisy, automation bias if signature becomes rote.\n\nMetrics: time saved per visit, note-edit rate, error rate caught at signature, clinician trust score. Most importantly — note accuracy measured against gold-standard human review.\n\nFrom my Aetna and Kaiser Permanente work, the failure mode I worry about: clinicians stop reviewing if the system seems \"good enough.\" That's where harm happens. Evals are non-negotiable."),
+        ip('Product Design','Design a product for patients with diabetes',
+"I have a Dexcom Type 2 case study at mrsspockdeepa.github.io/dexcomtype2 — I'll pull from that.\n\nTarget user: newly diagnosed Type 2 patients, because the behavior change window is widest and the existing CGM market underserves this segment (most Type 2s never adopt).\n\nPain points: Type 2 patients are often asymptomatic, so motivation to change is low. They get glucose data but no actionable insight — what does a 180 reading mean? What should they do differently? The current Dexcom app surfaces numbers without translating them into behavior.\n\nMVP: a \"what just happened\" view that pairs every glucose excursion with the most likely cause (logged meal, stress, sleep) and a single concrete next-time recommendation. Replaces the data dashboard with narrative.\n\nHuman-AI: AI generates the explanation, flags low-confidence cases for clinician review during scheduled visits.\n\nMetrics: Time in Range improvement, app open rate at glucose excursions, behavior change adoption, A1C reduction at 90 days.\n\nTradeoff: AI-generated explanations are wrong sometimes. The risk of a wrong \"what caused this\" insight is lower than the risk of inaction, but we measure both."),
+        ip('AI Product Taste','Where should AI be added in this product?',
+"My framing: AI should reduce friction, not remove agency. Three filters before adding AI:\n\n1. Is there a real workflow burden? If the user already does the task quickly, AI adds latency for no value.\n2. Can we measure quality? If we can't define \"good,\" we can't ship safely.\n3. Is the failure mode acceptable? A wrong restaurant suggestion is fine. A wrong drug dosage is a recall.\n\nIn DocV, I added AI exactly where friction was highest and the human task was hardest: reading a foreign passport's MRZ and validating it against IATA Timatic visa rules across 207 nationalities. Humans cannot scale that. The AI assist plus rules engine matched the workflow.\n\nI removed AI consideration from steps where the human decision was simple — clicking \"Accept\" on terms — because adding intelligence there would just add latency without value.\n\nBigger principle: AI is a feature, not a strategy. Start from user pain, not from \"we have a model.\""),
+        ip('AI Product Taste','How would you build user trust in AI?',
+"Trust is earned through transparency, control, and progressive exposure. I'll pull from DocV: users were uploading passport images to an AI verification system — high-stakes data, low margin for error.\n\nWhat worked:\n• Progressive trust: showed the user what the AI extracted (name, birthdate, nationality) before submitting. They could correct, which reinforced control.\n• Confidence transparency: when the model was uncertain, we surfaced \"we couldn't read your date of birth clearly — please confirm\" rather than guessing silently.\n• Clear override: human-assisted path was always one tap away.\n• Failure recovery: when the system rejected a document, we explained why and gave next steps.\n\nWhat I'd add next: explainability. Showing the user where the AI looked and what it saw. Counterintuitively, users trust models more when they can see the reasoning, even if they don't fully understand it.\n\nMetric: trust score (survey) plus override rate. Override rate going down over time without quality dropping = trust earned."),
+        ip('AI Product Taste','How would you evaluate AI feature quality?',
+"Three layers: offline evals, online metrics, qualitative trust signals. I'm currently in the Hamel Husain and Shreya Shankar evals course — this is the most underrated part of AI PM craft.\n\nOffline:\n• Frozen test set with gold-standard labels\n• Metrics tied to failure modes that matter (precision and recall for safety-critical tasks; BLEU/Rouge are weak proxies for most product use cases)\n• Adversarial examples to test robustness\n\nOnline:\n• Acceptance rate (does the user keep what the AI produced?)\n• Edit rate (do they have to fix it?)\n• Override rate (do they reject the AI path?)\n• Time-to-value\n\nQualitative:\n• Trust score\n• User-reported errors (especially silent failures, the most dangerous)\n\nBiggest mistake teams make: optimizing for proxy metrics that look good but don't reflect user value. I'd insist on a single north-star outcome metric — for an AI scribe that's note accuracy; for AI search, it's task completion rate without follow-up clarification."),
+        ip('Healthcare','Reduce clinician burnout using AI',
+"Clarifying: clinician burnout has multiple causes — admin work, EHR friction, alert fatigue, schedule pressure. AI can target two well: documentation and chart prep.\n\nTarget user: primary care PCPs, the highest-volume, highest-burnout segment.\n\nPain point validated by AMA studies: 1-2 hours of admin per hour of patient care.\n\nI'd prioritize ambient AI scribing because the time savings are immediate and workflow integration is clean. No new tool — AI listens during the visit and drafts the note.\n\nMVP:\n• Ambient transcription\n• Auto-drafted SOAP note with structured extraction\n• One-tap signature\n\nHuman-in-the-loop required: clinician signs, period. Liability and patient safety demand it.\n\nMetrics: time saved per visit, note completion before clinician leaves the room, opt-in rate, error rate caught at signature.\n\nFrom my Kaiser experience: integration cost is what kills these products, not AI quality. EHR integration is the real moat — deep Epic and Cerner integration before scaling.")
+      );
+    }
+  }
+  if (!d._v || d._v < 15) {
+    const t15 = '2026-05-07';
+    // Alec Go at Google
+    if (!d.activities.some(a => a.type==='networking' && a.contactLabel==='Alec Go')) {
+      d.activities.push({id:uid(),type:'networking',dateOccurred:t15,contactLabel:'Alec Go',companyLabel:'Google',relationship:'weak tie',channel:'in person',summary:"Met with Alec. He explained the Gtech wing at Google. Asked if he has bandwidth for internal referrals.",privateNotes:"Personal context:\n• Listens to Lenny's Podcast\n• Recommended Acquired podcast (business strategy)\n• Uses Notebook LM heavily to summarize his thinking\n• Works in / explained Gtech wing at Google",nextSteps:'Wait for confirmation on referral bandwidth. Follow up in 7 days if no reply.',nextStepDate:'2026-05-14',cadenceDays:30,createdAt:now,updatedAt:now});
+    }
+    // Premara application via Caitlin referral
+    if (!d.activities.some(a => a.type==='jobs_applied' && a.companyLabel==='Premara')) {
+      d.activities.push({id:uid(),type:'jobs_applied',dateOccurred:t15,companyLabel:'Premara',roleTitle:'Capability Product Manager',applicationStatus:'applied',source:'referral',durationMinutes:60,notes:'Applied via referral from Caitlin.',createdAt:now,updatedAt:now});
+    }
+    // Emily Pentico at Apex
+    if (!d.activities.some(a => a.type==='networking' && a.contactLabel==='Emily Pentico')) {
+      d.activities.push({id:uid(),type:'networking',dateOccurred:t15,contactLabel:'Emily Pentico',companyLabel:'Apex',relationship:'recruiter',channel:'email',summary:'Sent most recent resume.',nextSteps:'Wait for response. Follow up in 5 days if no reply.',nextStepDate:'2026-05-12',cadenceDays:14,createdAt:now,updatedAt:now});
+    }
+    // Acquired podcast — queued from Alec's recommendation
+    if (!d.activities.some(a => a.type==='podcasts' && a.showName==='Acquired')) {
+      d.activities.push({id:uid(),type:'podcasts',dateOccurred:'',showName:'Acquired',episodeTitle:'',guest:'',status:'queued',durationMinutes:0,keyTakeaways:'',applicableTo:'business strategy',createdAt:now,updatedAt:now});
+    }
+  }
+  d._v = 15;
   saveData(d);
   return d;
 }
@@ -440,8 +500,9 @@ function buildNav() {
   const nav = document.getElementById('nav');
   let h = `<div class="nav-item${view.name==='dashboard'?' active':''}" data-view="dashboard"><span class="ni">🏠</span>Dashboard</div>`;
   h += `<div class="nav-item${view.name==='pipeline'?' active':''}" data-view="pipeline"><span class="ni">📋</span>Pipeline</div>`;
+  h += `<div class="nav-item${view.name==='interview_prep'?' active':''}" data-view="interview_prep"><span class="ni">🎯</span>Interview Prep</div>`;
   h += '<div class="nav-sec">Modules</div>';
-  MODS.forEach(m => { h += `<div class="nav-item${view.name==='module'&&view.modId===m.id?' active':''}" data-view="module" data-mod="${m.id}"><span class="ni">${m.icon}</span>${m.label}</div>`; });
+  MODS.filter(m => !m.hidden).forEach(m => { h += `<div class="nav-item${view.name==='module'&&view.modId===m.id?' active':''}" data-view="module" data-mod="${m.id}"><span class="ni">${m.icon}</span>${m.label}</div>`; });
   h += '<div class="nav-sec">System</div>';
   h += `<div class="nav-item${view.name==='settings'?' active':''}" data-view="settings"><span class="ni">⚙️</span>Settings</div>`;
   nav.innerHTML = h;
@@ -456,7 +517,7 @@ function buildNav() {
 // ── Dropdown ───────────────────────────────────────────────────────
 function buildDropdown() {
   const menu = document.getElementById('dd-menu');
-  menu.innerHTML = MODS.map(m => `<div class="dd-item" data-mod="${m.id}">${m.icon} ${m.label}</div>`).join('');
+  menu.innerHTML = MODS.filter(m => !m.hidden).map(m => `<div class="dd-item" data-mod="${m.id}">${m.icon} ${m.label}</div>`).join('');
   menu.querySelectorAll('.dd-item').forEach(el => el.addEventListener('click', () => { ddOpen=false; menu.classList.remove('open'); openNew(el.dataset.mod); }));
 }
 
@@ -596,6 +657,45 @@ function renderDashboard() {
   el.querySelectorAll('.mod-tile').forEach(e => e.addEventListener('click', () => { view={name:'module',modId:e.dataset.mod}; render(); }));
 }
 
+// ── Interview Prep ─────────────────────────────────────────────────
+function renderInterviewPrep() {
+  const ips = data.activities.filter(a => a.type==='interview_prep');
+  const cats = ['Product Critique','Product Design','AI Product Taste','Healthcare','Prioritization'];
+  const el = document.getElementById('content');
+  let h = `<div class="page-title">🎯 Interview Prep</div>
+    <div class="page-sub" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <span>Product taste questions with tailored answer drafts</span>
+      <button class="btn btn-primary btn-sm" id="ip-new">+ Add Question</button>
+    </div>`;
+  let total = 0;
+  cats.forEach(cat => {
+    const items = ips.filter(i => i.category === cat);
+    if (!items.length) return;
+    total += items.length;
+    h += `<div class="card"><div class="ip-cat-hd">${cat}<span class="ip-cat-count">${items.length}</span></div>`;
+    items.forEach(i => {
+      const aid = 'ip-ans-'+i.id;
+      const status = i.status || 'draft';
+      h += `<div class="ip-row">
+        <div class="ip-q-row">
+          <div class="ip-q">${i.question||''}</div>
+          <div class="ip-actions">
+            <span class="ip-pill-${status}">${status}</span>
+            ${i.answer?`<button class="collapse-btn dark" onclick="toggleEl('${aid}',this)">▶ show</button>`:'<span style="font-size:11px;color:#9CA3AF;font-style:italic">no answer yet</span>'}
+            <span class="edit-lnk" data-id="${i.id}">Edit</span>
+          </div>
+        </div>
+        ${i.answer?`<div id="${aid}" class="ip-answer" style="display:none">${i.answer}</div>`:''}
+      </div>`;
+    });
+    h += `</div>`;
+  });
+  if (!total) h += '<div class="card"><div class="empty">No questions yet. Click "+ Add Question" to start.</div></div>';
+  el.innerHTML = h;
+  el.querySelectorAll('.edit-lnk').forEach(e => e.addEventListener('click', () => openEdit('interview_prep', data.activities.find(a => a.id===e.dataset.id))));
+  document.getElementById('ip-new')?.addEventListener('click', () => openNew('interview_prep'));
+}
+
 // ── Module list ────────────────────────────────────────────────────
 function renderModule() {
   const mod = modMap[view.modId];
@@ -710,6 +810,7 @@ function render() {
   if (view.name==='dashboard') renderDashboard();
   else if (view.name==='module') renderModule();
   else if (view.name==='pipeline') renderPipeline();
+  else if (view.name==='interview_prep') renderInterviewPrep();
   else if (view.name==='settings') renderSettings();
 }
 
