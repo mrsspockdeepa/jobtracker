@@ -1,5 +1,5 @@
-anthropic>=0.101.0
 beautifulsoup4>=4.12.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 schedule>=1.2.0
+anthropic>=0.101.0  # optional — only needed if ANTHROPIC_API_KEY is set
